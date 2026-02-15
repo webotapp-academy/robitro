@@ -1,0 +1,73 @@
+# Robitro Project Deployment & Git Workflow
+
+## 1. Project Structure (Server-Side)
+Root Path: /home/webotapp-robitro/htdocs/robitro.webotapp.com/
+- server/        -> API & Express App
+- server/public/ -> Frontend Build (Vite Dist)
+- server/server.js -> Node.js Entry Point
+- .env           -> Environment Variables
+
+## 2. Deployment Workflow
+
+### Step A: Local Preparation
+Before pushing code, you must build the frontend and move it to the server's public folder:
+1. cd client && npm run build
+2. rm -rf ../server/public/*
+3. cp -r dist/* ../server/public/
+4. cd ../server
+5. git add .
+6. git commit -m "Update: Frontend build and backend changes"
+7. git push origin main
+
+### Step B: Manual Server Update (SSH)
+1. SSH into the server:
+   ssh webotapp-robitro@your-server-ip
+2. Navigate to project root:
+   cd /home/webotapp-robitro/htdocs/robitro.webotapp.com/
+3. Pull changes:
+   git pull origin main
+4. Restart the app:
+   pm2 restart robitro-server
+
+---
+
+## 3. Recommended Automated Workflow (Deployment Script)
+Create a file named `deploy.sh` in the server root to automate updates:
+
+```bash
+#!/bin/bash
+echo "🚀 Starting Deployment..."
+
+# 1. Pull latest code
+echo "📥 Pulling latest changes..."
+git pull origin main
+
+# 2. Install Backend Dependencies
+echo "📦 Installing server dependencies..."
+cd server
+npm install --production
+
+# 3. Prisma Generate (If models changed)
+echo "💎 Generating Prisma Client..."
+npx prisma generate
+
+# 4. Restart PM2 Process
+echo "🔄 Restarting PM2 process..."
+pm2 restart server --update-env
+
+echo "✅ Deployment Finished Successfully!"
+```
+
+To use it:
+1. `chmod +x deploy.sh`
+2. Run `./deploy.sh` whenever you push new changes.
+
+---
+
+## 4. PM2 Setup Info
+To initialy start the server with PM2:
+cd server
+pm2 start server.js --name "robitro-server" --port 3000
+
+## 5. CloudPanel Reverse Proxy
+Ensure CloudPanel vhost is configured to proxy requests to http://127.0.0.1:3000

@@ -1,0 +1,129 @@
+================================================================================
+                        ROBITRO PROJECT - MASTER TODO
+================================================================================
+
+================================================================================
+SECTION 1: ALL PAGES (Frontend)
+================================================================================
+
+PUBLIC PAGES:
+  1.  Home            → /                 → Home.jsx
+  2.  Courses         → /courses          → Courses.jsx
+  3.  Course Detail   → /courses/:id      → CourseDetail.jsx
+  4.  Shop            → /shop             → Shop.jsx
+  5.  Product Detail  → /shop/:id         → ProductDetail.jsx
+  6.  Cart            → /cart             → Cart.jsx
+  7.  Community       → /community        → Community.jsx
+  8.  Login           → /login            → Login.jsx
+  9.  Register        → /register         → Register.jsx
+
+PROTECTED PAGES (Require Login):
+  10. Dashboard       → /dashboard        → Dashboard.jsx
+  11. My Courses      → /my-courses       → MyCourses.jsx
+
+SHARED COMPONENTS:
+  - Layout.jsx (Header + Footer wrapper)
+  - Navbar.jsx
+  - Footer.jsx
+  - ProtectedRoute.jsx
+  - ScrollToTop.jsx
+
+================================================================================
+SECTION 2: DATABASE TABLES (Neon PostgreSQL via Prisma)
+================================================================================
+
+EXISTING TABLES:
+  [x] User              - id, firstName, lastName, email, password, role, age, etc.
+  [x] Partner            - id, name, partnerType, email, phone, address, etc.
+  [x] Product            - id, name, description, price, ageGroup, images, stock, etc.
+  [x] Course             - id, title, description, ageGroup, level, price, etc.
+  [x] Module             - id, title, order, courseId
+  [x] Lesson             - id, title, videoUrl, duration, resources, order, moduleId
+  [x] Enrollment         - id, userId, courseId, progressPercentage, status, etc.
+  [x] CompletedLesson    - id, enrollmentId, lessonId, completedAt
+  [x] Order              - id, userId, items, totalAmount, currency, status, etc.
+  [x] CommunityPost      - id, userId, title, description, images, likesCount, etc.
+  [x] Comment            - id, content, userId, postId, likesCount
+  [x] PostLike           - id, userId, postId
+
+TABLES NEEDED FOR ADMIN (CMS) - ALL CREATED ✅:
+  [x] HeroSection        - title, subtitle, ctaText, ctaLink, backgroundImage, isActive
+  [x] FeatureCard        - icon, title, description, gradient, image, displayOrder
+  [x] Testimonial        - name, age, country, quote, avatar, rating, displayOrder
+  [x] FAQ                - question, answer, displayOrder, isActive
+  [x] SiteSetting        - key, value, type (for global configs like site name, logo, etc.)
+  [x] Banner             - title, description, image, link, position, isActive, startDate, endDate
+  [x] TechBite           - title, videoUrl, thumbnail, views, duration, displayOrder, isActive
+  [x] MasterMaker        - name, role, avatar, level, projects, followers, badge, gradient
+  [x] ProjectShowcase    - title, author, tag, image, color, likes, category, displayOrder
+  [x] Challenge          - title, subtitle, description, prize, registeredCount, startDate, endDate, isActive
+  [x] SocialLink         - platform, url, handle, followerCount, displayOrder
+
+================================================================================
+SECTION 3: ADMIN PANEL
+================================================================================
+
+ADMIN PANEL PAGES - ALL BUILT ✅:
+  [x] Admin Dashboard         → /admin                  → Overview stats & quick actions
+  [x] Users Management        → /admin/users            → CRUD users, roles, status
+  [x] Partners Management     → /admin/partners         → CRUD partners, approval flow
+  [x] Courses Management      → /admin/courses          → CRUD courses, modules, lessons
+  [x] Products Management     → /admin/products         → CRUD products, stock, pricing
+  [x] Orders Management       → /admin/orders           → View/update orders, status
+  [x] Community Management    → /admin/community        → Manage posts, moderate comments
+  [x] Enrollments Management  → /admin/enrollments      → View enrollments, issue certificates
+
+  --- CMS / Content Management ---
+  [x] Hero Section Editor     → /admin/cms/hero         → Edit homepage hero content
+  [x] Features Editor         → /admin/cms/features     → Edit feature cards
+  [x] Testimonials Editor     → /admin/cms/testimonials → CRUD testimonials
+  [x] FAQ Editor              → /admin/cms/faqs         → CRUD FAQs
+  [x] Banners Editor          → /admin/cms/banners      → CRUD promotional banners
+  [x] Tech Bites Editor       → /admin/cms/tech-bites   → CRUD community video shorts
+  [x] Master Makers Editor    → /admin/cms/makers       → CRUD featured makers
+  [x] Project Showcase Editor → /admin/cms/projects     → CRUD showcase projects
+  [x] Challenge Editor        → /admin/cms/challenges   → CRUD competitions/challenges
+  [x] Site Settings           → /admin/cms/settings     → Logo, site name, SEO, social links
+  [x] Social Links            → /admin/cms/social-links → CRUD social media links
+
+ADMIN BACKEND (API Routes) - ALL BUILT ✅:
+  [x] /api/admin/dashboard    → Stats aggregation
+  [x] /api/admin/users        → Full CRUD
+  [x] /api/admin/partners     → Full CRUD + approval
+  [x] /api/admin/courses      → Full CRUD + modules/lessons
+  [x] /api/admin/products     → Full CRUD
+  [x] /api/admin/orders       → Read + status update
+  [x] /api/admin/community    → Moderate posts/comments
+  [x] /api/admin/enrollments  → Read + certificate management
+  [x] /api/admin/cms/*        → Full CRUD for all CMS tables
+
+================================================================================
+SECTION 4: EXECUTION ORDER - ALL DONE ✅
+================================================================================
+
+PHASE 1 - DATABASE (Prisma Schema + Migration) ✅
+  [x] Add all CMS tables to schema.prisma
+  [x] Run prisma db push (synced with Neon DB)
+  [x] Prisma client generated
+
+PHASE 2 - ADMIN BACKEND (Express API) ✅
+  [x] Admin uses existing auth middleware (protect + authorize)
+  [x] Built adminController.js (full CRUD for all entities + CMS)
+  [x] Built admin routes (routes/admin.js)
+  [x] Wired admin routes into server.js
+
+PHASE 3 - ADMIN FRONTEND (React) ✅
+  [x] Created AdminLayout.jsx (sidebar + header)
+  [x] Built AdminDashboard.jsx (stats + recent data)
+  [x] Built CrudPage.jsx (reusable CRUD component)
+  [x] Built AdminPages.jsx (all 18 individual pages)
+  [x] Wired all admin routes in App.jsx
+
+PHASE 4 - FRONTEND INTEGRATION ✅
+  [x] Admin routes integrated in App.jsx
+  [x] Admin protected by AdminRoute (requires admin role)
+  [x] Admin uses separate layout (no Navbar/Footer)
+
+================================================================================
+                          ✅ ALL TASKS COMPLETED
+================================================================================
