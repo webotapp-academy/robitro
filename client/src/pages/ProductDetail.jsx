@@ -389,6 +389,7 @@ export default function ProductDetail() {
           const mappedProduct = {
             ...dbProduct,
             ...dbProduct.metadata,
+            category: dbProduct.category?.name || dbProduct.categoryName || 'Uncategorized',
             mrp: dbProduct.metadata?.originalPrice || (dbProduct.price * 1.2),
             reviews: dbProduct.metadata?.reviews || 0,
             features: dbProduct.metadata?.features || [],
@@ -446,6 +447,7 @@ export default function ProductDetail() {
       cart.push({ ...product, quantity: 1 });
     }
     localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
     window.location.href = '/cart';
   };
 

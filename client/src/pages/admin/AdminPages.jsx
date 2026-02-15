@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Eye, User, Package, ShoppingBag, X } from 'lucide-react';
 import CrudPage from './CrudPage.jsx';
 
 // ========================
@@ -85,53 +88,212 @@ export function AdminCourses() {
 }
 
 export function AdminProducts() {
+    const navigate = useNavigate();
     return <CrudPage
         title="Products"
         endpoint="/products"
         searchable={true}
+        onAdd={() => navigate('/admin/products/add')}
+        onEdit={(item) => navigate(`/admin/products/edit/${item.id}`)}
         fields={[
-            { key: 'name', label: 'Product Name', showInTable: true, editable: true, placeholder: 'Product Name' },
-            { key: 'description', label: 'Description', type: 'textarea', showInTable: false, editable: true, placeholder: 'Product description...' },
-            {
-                key: 'category', label: 'Category', showInTable: true, editable: true, type: 'select', options: [
-                    { value: 'Robotics', label: 'Robotics' },
-                    { value: 'Electronics', label: 'Electronics' },
-                    { value: 'Arduino', label: 'Arduino' },
-                    { value: 'Sensors', label: 'Sensors' },
-                    { value: 'Kits', label: 'Kits' },
-                    { value: 'Accessories', label: 'Accessories' },
-                ]
-            },
-            { key: 'ageGroup', label: 'Age Group', showInTable: true, editable: true, placeholder: '8+ years' },
-            { key: 'price', label: 'Price (£)', type: 'number', showInTable: true, editable: true, default: 0 },
-            { key: 'stock', label: 'Stock', type: 'number', showInTable: true, editable: true, default: 0 },
-            { key: 'images', label: 'Image URLs (comma-separated)', type: 'textarea', showInTable: false, editable: true, placeholder: 'https://image1.jpg, https://image2.jpg' },
-            {
-                key: 'status', label: 'Status', showInTable: true, editable: true, type: 'select', options: [
-                    { value: 'active', label: 'Active' },
-                    { value: 'inactive', label: 'Inactive' },
-                    { value: 'out_of_stock', label: 'Out of Stock' },
-                ], default: 'active'
-            },
-            { key: 'rating', label: 'Rating', showInTable: true, editable: false },
-            { key: 'reviewsCount', label: 'Reviews', showInTable: true, editable: false },
+            { key: 'name', label: 'Product Name', showInTable: true },
+            { key: 'categoryName', label: 'Category', showInTable: true },
+            { key: 'price', label: 'Price (£)', type: 'number', showInTable: true },
+            { key: 'stock', label: 'Stock', type: 'number', showInTable: true },
+            { key: 'status', label: 'Status', showInTable: true },
         ]}
     />;
 }
 
 export function AdminOrders() {
-    return <CrudPage title="Orders" endpoint="/orders" fields={[
-        { key: 'id', label: 'Order ID', showInTable: true, editable: false },
-        { key: 'totalAmount', label: 'Amount (£)', type: 'number', showInTable: true, editable: false },
-        { key: 'currency', label: 'Currency', showInTable: true, editable: false },
-        {
-            key: 'status', label: 'Status', type: 'select', showInTable: true, options: [
-                { value: 'pending', label: 'Pending' }, { value: 'processing', label: 'Processing' },
-                { value: 'completed', label: 'Completed' }, { value: 'cancelled', label: 'Cancelled' },
-            ]
-        },
-        { key: 'paymentType', label: 'Payment Type', showInTable: true, editable: false },
-    ]} />;
+    const [viewOrder, setViewOrder] = useState(null);
+
+    return (
+        <>
+            <CrudPage
+                title="Orders"
+                endpoint="/orders"
+                canAdd={false}
+                fields={[
+                    { key: 'id', label: 'Order ID', showInTable: true, editable: false },
+                    { key: 'totalAmount', label: 'Amount (£)', type: 'number', showInTable: true, editable: false },
+                    { key: 'currency', label: 'Currency', showInTable: true, editable: false },
+                    {
+                        key: 'status', label: 'Status', type: 'select', showInTable: true, options: [
+                            { value: 'pending', label: 'Pending' }, { value: 'processing', label: 'Processing' },
+                            { value: 'completed', label: 'Completed' }, { value: 'cancelled', label: 'Cancelled' },
+                        ]
+                    },
+                    { key: 'paymentType', label: 'Payment Type', showInTable: true, editable: false },
+                    { key: 'transactionNumber', label: 'Transaction #', showInTable: true, editable: false },
+                ]}
+                customActions={(order) => (
+                    <button
+                        onClick={() => setViewOrder(order)}
+                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="View Details"
+                    >
+                        <Eye size={15} />
+                    </button>
+                )}
+            />
+
+            {/* Order Details Modal */}
+            {viewOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-black/50" onClick={() => setViewOrder(null)} />
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                        {/* Header */}
+                        <div className="sticky top-0 bg-gradient-to-r from-robitro-blue to-robitro-teal px-6 py-5 border-b border-gray-100 flex justify-between items-center rounded-t-2xl">
+                            <div>
+                                <h3 className="text-xl font-bold text-white">Order Details</h3>
+                                <p className="text-white/80 text-sm mt-1">#{viewOrder.id.slice(0, 8).toUpperCase()}</p>
+                            </div>
+                            <button onClick={() => setViewOrder(null)} className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            {/* Order Summary */}
+                            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                <h4 className="text-sm font-bold text-robitro-navy uppercase tracking-wider mb-4">Order Summary</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Total Amount</p>
+                                        <p className="text-lg font-black text-robitro-blue">£{viewOrder.totalAmount?.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Status</p>
+                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${viewOrder.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                            viewOrder.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                                                viewOrder.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'
+                                            }`}>
+                                            {viewOrder.status?.toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Payment Type</p>
+                                        <p className="text-sm font-bold text-robitro-navy">{viewOrder.paymentType || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Transaction #</p>
+                                        <p className="text-sm font-bold text-robitro-navy">{viewOrder.transactionNumber || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Customer Details */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200">
+                                <h4 className="text-sm font-bold text-robitro-navy uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <User size={16} className="text-robitro-blue" />
+                                    Customer Details
+                                </h4>
+                                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Name</p>
+                                        <p className="font-bold text-robitro-navy">{viewOrder.customerName}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Email</p>
+                                        <p className="font-bold text-robitro-navy">{viewOrder.customerEmail}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Phone</p>
+                                        <p className="font-bold text-robitro-navy">{viewOrder.customerPhone}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Shipping Address */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200">
+                                <h4 className="text-sm font-bold text-robitro-navy uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <Package size={16} className="text-robitro-blue" />
+                                    Shipping Address
+                                </h4>
+                                <div className="text-sm space-y-1">
+                                    <p className="font-bold text-robitro-navy">{viewOrder.shippingAddress}</p>
+                                    <p className="text-gray-600">{viewOrder.shippingCity}, {viewOrder.shippingPostcode}</p>
+                                    <p className="text-gray-600">{viewOrder.shippingCountry}</p>
+                                </div>
+                            </div>
+
+                            {/* Order Items */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200">
+                                <h4 className="text-sm font-bold text-robitro-navy uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <ShoppingBag size={16} className="text-robitro-blue" />
+                                    Order Items
+                                </h4>
+                                <div className="space-y-3">
+                                    {viewOrder.items && Array.isArray(viewOrder.items) && viewOrder.items.map((item, index) => (
+                                        <Link
+                                            key={index}
+                                            to={`/shop/${item.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors group"
+                                        >
+                                            {item.image && (
+                                                <img
+                                                    src={item.image || item.images?.[0]}
+                                                    alt={item.name}
+                                                    className="w-16 h-16 rounded-lg object-cover"
+                                                />
+                                            )}
+                                            <div className="flex-grow">
+                                                <h5 className="font-bold text-robitro-navy text-sm group-hover:text-robitro-blue transition-colors">{item.name}</h5>
+                                                <p className="text-xs text-gray-500 mt-1">Quantity: {item.quantity}</p>
+                                                <p className="text-sm font-black text-robitro-blue mt-1">
+                                                    £{item.price} × {item.quantity} = £{(item.price * item.quantity).toFixed(2)}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center text-gray-300 group-hover:text-robitro-blue">
+                                                <Eye size={14} />
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Price Breakdown */}
+                            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                <h4 className="text-sm font-bold text-robitro-navy uppercase tracking-wider mb-4">Price Breakdown</h4>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Subtotal</span>
+                                        <span className="font-bold text-robitro-navy">£{viewOrder.subtotal?.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Shipping</span>
+                                        <span className="font-bold text-robitro-navy">
+                                            {viewOrder.shipping === 0 ? 'FREE' : `£${viewOrder.shipping?.toFixed(2)}`}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Tax (20%)</span>
+                                        <span className="font-bold text-robitro-navy">£{viewOrder.tax?.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between pt-3 border-t border-gray-200">
+                                        <span className="font-bold text-robitro-navy">Total</span>
+                                        <span className="text-xl font-black text-robitro-blue">£{viewOrder.totalAmount?.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Order Notes */}
+                            {viewOrder.orderNotes && (
+                                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                                    <h4 className="text-sm font-bold text-robitro-navy uppercase tracking-wider mb-3">Order Notes</h4>
+                                    <p className="text-sm text-gray-600">{viewOrder.orderNotes}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 }
 
 export function AdminCommunity() {
@@ -150,6 +312,37 @@ export function AdminEnrollments() {
         { key: 'progressPercentage', label: 'Progress %', showInTable: true, editable: false },
         { key: 'status', label: 'Status', showInTable: true, editable: false },
         { key: 'certificateIssued', label: 'Certificate', type: 'switch', showInTable: true, editable: false },
+    ]} />;
+}
+
+export function AdminLeads() {
+    return <CrudPage title="Course Leads" endpoint="/leads" canAdd={false} fields={[
+        { key: 'name', label: 'Name', showInTable: true },
+        { key: 'email', label: 'Email', showInTable: true },
+        { key: 'phone', label: 'Phone', showInTable: true },
+        { key: 'course.title', label: 'Course', showInTable: true, editable: false },
+        {
+            key: 'status', label: 'Status', type: 'select', showInTable: true, options: [
+                { value: 'pending', label: 'Pending' }, { value: 'contacted', label: 'Contacted' },
+                { value: 'enrolled', label: 'Enrolled' }, { value: 'closed', label: 'Closed' }
+            ]
+        },
+        { key: 'createdAt', label: 'Date', showInTable: true, editable: false },
+    ]} />;
+}
+
+export function AdminCallbacks() {
+    return <CrudPage title="Callback Requests" endpoint="/callbacks" canAdd={false} fields={[
+        { key: 'name', label: 'Name', showInTable: true },
+        { key: 'phone', label: 'Phone', showInTable: true },
+        { key: 'preferredTime', label: 'Preferred Time', showInTable: true },
+        { key: 'course.title', label: 'Course', showInTable: true, editable: false },
+        {
+            key: 'status', label: 'Status', type: 'select', showInTable: true, options: [
+                { value: 'pending', label: 'Pending' }, { value: 'called', label: 'Called' }, { value: 'closed', label: 'Closed' }
+            ]
+        },
+        { key: 'createdAt', label: 'Date', showInTable: true, editable: false },
     ]} />;
 }
 
@@ -321,8 +514,17 @@ export function CmsSettings() {
             key: 'group', label: 'Group', type: 'select', showInTable: true, default: 'general', options: [
                 { value: 'general', label: 'General' }, { value: 'seo', label: 'SEO' },
                 { value: 'branding', label: 'Branding' }, { value: 'contact', label: 'Contact' },
+                { value: 'legal', label: 'Legal' },
             ]
         },
         { key: 'label', label: 'Display Label' },
+    ]} />;
+}
+
+export function AdminProductCategories() {
+    return <CrudPage title="Product Categories" endpoint="/product-categories" fields={[
+        { key: 'name', label: 'Category Name', showInTable: true, editable: true },
+        { key: 'slug', label: 'Slug', showInTable: true, editable: true },
+        { key: 'description', label: 'Description', type: 'textarea', showInTable: true, editable: true },
     ]} />;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -129,17 +130,61 @@ export default function CourseDetail() {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const handleEnrollSubmit = (e) => {
+  const handleEnrollSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for enrolling! Check your email for next steps.');
-    setShowEnrollModal(false);
+    try {
+      const response = await api.post('/enquiry/lead', {
+        ...enrollData,
+        courseId: id,
+        type: 'enrollment'
+      });
+      if (response.data.success) {
+        Swal.fire({
+          title: 'Enrollment Successful!',
+          text: 'Thank you for enrolling! Our team will contact you shortly with next steps.',
+          icon: 'success',
+          confirmButtonColor: '#F59E0B'
+        });
+        setShowEnrollModal(false);
+        setEnrollData({ name: '', email: '', phone: '' });
+      }
+    } catch (err) {
+      console.error('Enrollment error:', err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to submit enrollment. Please try again or contact support.',
+        icon: 'error',
+        confirmButtonColor: '#EF4444'
+      });
+    }
   };
 
-  const handleCallbackSubmit = (e) => {
+  const handleCallbackSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you! Our team will call you back shortly.');
-    setShowCallbackModal(false);
-    setCallbackData({ name: '', phone: '', preferredTime: '' });
+    try {
+      const response = await api.post('/enquiry/callback', {
+        ...callbackData,
+        courseId: id
+      });
+      if (response.data.success) {
+        Swal.fire({
+          title: 'Request Sent!',
+          text: 'Thank you! Our team will call you back shortly.',
+          icon: 'success',
+          confirmButtonColor: '#F59E0B'
+        });
+        setShowCallbackModal(false);
+        setCallbackData({ name: '', phone: '', preferredTime: '' });
+      }
+    } catch (err) {
+      console.error('Callback error:', err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to submit callback request. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#EF4444'
+      });
+    }
   };
 
   if (loading) {
@@ -180,9 +225,9 @@ export default function CourseDetail() {
             <h3 className="text-2xl font-bold text-robitro-navy mb-2">Enroll in {course.title}</h3>
             <p className="text-gray-600 mb-6">Fill in your details to get started</p>
             <form onSubmit={handleEnrollSubmit} className="space-y-4">
-              <input type="text" required placeholder="Your Name" value={enrollData.name} onChange={(e) => setEnrollData({ ...enrollData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue" />
-              <input type="email" required placeholder="Email Address" value={enrollData.email} onChange={(e) => setEnrollData({ ...enrollData, email: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue" />
-              <input type="tel" required placeholder="Phone Number" value={enrollData.phone} onChange={(e) => setEnrollData({ ...enrollData, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue" />
+              <input type="text" required placeholder="Your Name" value={enrollData.name} onChange={(e) => setEnrollData({ ...enrollData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
+              <input type="email" required placeholder="Email Address" value={enrollData.email} onChange={(e) => setEnrollData({ ...enrollData, email: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
+              <input type="tel" required placeholder="Phone Number" value={enrollData.phone} onChange={(e) => setEnrollData({ ...enrollData, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
               <button type="submit" className="w-full py-4 bg-robitro-yellow text-gray-900 rounded-xl font-bold text-lg hover:shadow-lg transition-all">🎓 Enroll Now - £{course.price}</button>
             </form>
           </div>
@@ -199,15 +244,15 @@ export default function CourseDetail() {
             <form onSubmit={handleCallbackSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Your Name</label>
-                <input type="text" required placeholder="Enter your name" value={callbackData.name} onChange={(e) => setCallbackData({ ...callbackData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue" />
+                <input type="text" required placeholder="Enter your name" value={callbackData.name} onChange={(e) => setCallbackData({ ...callbackData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-                <input type="tel" required placeholder="+44 7XXX XXXXXX" value={callbackData.phone} onChange={(e) => setCallbackData({ ...callbackData, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue" />
+                <input type="tel" required placeholder="+44 7XXX XXXXXX" value={callbackData.phone} onChange={(e) => setCallbackData({ ...callbackData, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Preferred Time</label>
-                <select value={callbackData.preferredTime} onChange={(e) => setCallbackData({ ...callbackData, preferredTime: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue">
+                <select value={callbackData.preferredTime} onChange={(e) => setCallbackData({ ...callbackData, preferredTime: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900">
                   <option value="">Select a time</option>
                   <option value="morning">Morning (9am - 12pm)</option>
                   <option value="afternoon">Afternoon (12pm - 5pm)</option>

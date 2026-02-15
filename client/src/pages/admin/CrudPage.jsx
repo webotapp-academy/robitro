@@ -11,7 +11,7 @@ async function apiFetch(url, options = {}) {
     return res.data;
 }
 
-export default function CrudPage({ title, endpoint, fields, searchable = true }) {
+export default function CrudPage({ title, endpoint, fields, searchable = true, customActions, canAdd = true, onAdd, onEdit }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -40,6 +40,7 @@ export default function CrudPage({ title, endpoint, fields, searchable = true })
     useEffect(() => { fetchItems(); }, [fetchItems]);
 
     const handleCreate = () => {
+        if (onAdd) return onAdd();
         const initial = {};
         fields.forEach(f => { initial[f.key] = f.default ?? ''; });
         setFormData(initial);
@@ -48,6 +49,7 @@ export default function CrudPage({ title, endpoint, fields, searchable = true })
     };
 
     const handleEdit = (item) => {
+        if (onEdit) return onEdit(item);
         const data = {};
         fields.forEach(f => { data[f.key] = item[f.key] ?? f.default ?? ''; });
         setFormData(data);
@@ -139,9 +141,11 @@ export default function CrudPage({ title, endpoint, fields, searchable = true })
                             />
                         </div>
                     )}
-                    <button onClick={handleCreate} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-robitro-blue to-robitro-teal text-white !text-white text-sm font-bold rounded-xl hover:shadow-lg transition-all whitespace-nowrap">
-                        <Plus size={16} /> Add New
-                    </button>
+                    {canAdd && (
+                        <button onClick={handleCreate} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-robitro-blue to-robitro-teal text-white !text-white text-sm font-bold rounded-xl hover:shadow-lg transition-all whitespace-nowrap">
+                            <Plus size={16} /> Add New
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -179,6 +183,7 @@ export default function CrudPage({ title, endpoint, fields, searchable = true })
                                     ))}
                                     <td className="px-5 py-3.5 text-right">
                                         <div className="flex justify-end gap-2">
+                                            {customActions && customActions(item)}
                                             <button onClick={() => handleEdit(item)} className="p-2 text-robitro-blue hover:bg-robitro-blue/10 rounded-lg transition-colors"><Edit2 size={15} /></button>
                                             <button onClick={() => handleDelete(item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={15} /></button>
                                         </div>

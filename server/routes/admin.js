@@ -1,5 +1,6 @@
 import express from 'express';
 import { protect, authorize } from '../middleware/auth.js';
+import { upload } from '../utils/upload.js';
 import {
     getDashboardStats,
     getUsers,
@@ -58,7 +59,18 @@ import {
     getSocialLinks,
     createSocialLink,
     updateSocialLink,
-    deleteSocialLink
+    deleteSocialLink,
+    getLeads,
+    updateLead,
+    deleteLead,
+    getCallbacks,
+    updateCallback,
+    deleteCallback,
+    getProductCategories,
+    createProductCategory,
+    updateProductCategory,
+    deleteProductCategory,
+    updateSiteSetting
 } from '../controllers/adminController.js';
 import { getAllCourses, createCourse, updateCourse, deleteCourse } from '../controllers/courseController.js';
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.js';
@@ -135,6 +147,7 @@ router.delete('/cms/faqs/:id', deleteFAQ);
 // CMS: Site Settings
 router.get('/cms/settings', getSiteSettings);
 router.post('/cms/settings', upsertSiteSetting);
+router.put('/cms/settings/:id', updateSiteSetting);
 router.delete('/cms/settings/:id', deleteSiteSetting);
 
 // CMS: Banners
@@ -172,5 +185,30 @@ router.get('/cms/social-links', getSocialLinks);
 router.post('/cms/social-links', createSocialLink);
 router.put('/cms/social-links/:id', updateSocialLink);
 router.delete('/cms/social-links/:id', deleteSocialLink);
+
+// Leads
+router.get('/leads', getLeads);
+router.put('/leads/:id', updateLead);
+router.delete('/leads/:id', deleteLead);
+
+// Callbacks
+router.get('/callbacks', getCallbacks);
+router.put('/callbacks/:id', updateCallback);
+router.delete('/callbacks/:id', deleteCallback);
+
+// Product Categories
+router.get('/product-categories', getProductCategories);
+router.post('/product-categories', createProductCategory);
+router.put('/product-categories/:id', updateProductCategory);
+router.delete('/product-categories/:id', deleteProductCategory);
+
+// File Upload
+router.post('/upload', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ success: true, url });
+});
 
 export default router;

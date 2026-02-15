@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Users, GraduationCap, ShoppingBag, ShoppingCart,
     BookOpen, MessageSquare, Image, Star, HelpCircle, Settings,
     Megaphone, Video, Award, Trophy, Share2, ChevronLeft, ChevronRight,
-    LogOut, Menu, X
+    LogOut, Menu, X, Phone, Users2, Tags
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -14,9 +14,12 @@ const sidebarItems = [
     { label: 'Partners', icon: BookOpen, path: '/admin/partners' },
     { label: 'Courses', icon: GraduationCap, path: '/admin/courses' },
     { label: 'Products', icon: ShoppingBag, path: '/admin/products' },
+    { label: 'Product Categories', icon: Tags, path: '/admin/product-categories' },
     { label: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
     { label: 'Community', icon: MessageSquare, path: '/admin/community' },
     { label: 'Enrollments', icon: Award, path: '/admin/enrollments' },
+    { label: 'Leads', icon: Users2, path: '/admin/leads' },
+    { label: 'Callbacks', icon: Phone, path: '/admin/callbacks' },
     { type: 'divider', label: 'CMS' },
     { label: 'Hero Sections', icon: Image, path: '/admin/cms/hero' },
     { label: 'Features', icon: Star, path: '/admin/cms/features' },

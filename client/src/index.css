@@ -16,6 +16,26 @@ html {
   scroll-behavior: smooth;
 }
 
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 body {
   font-family: 'Inter', 'Nunito', system-ui, sans-serif;
   background-color: #FFFFFF;
@@ -274,7 +294,7 @@ p {
 
   /* ==================== Input Fields ==================== */
   .input-field {
-    @apply w-full px-6 py-3 bg-white border-2 border-gray-200 rounded-rounded focus:outline-none focus:border-robitro-blue focus:ring-2 focus:ring-robitro-blue/10 transition-all duration-200 font-body text-robitro-navy placeholder-gray-400;
+    @apply w-full px-6 py-3 bg-white border-2 border-gray-200 rounded-rounded focus:outline-none focus:border-robitro-blue focus:ring-2 focus:ring-robitro-blue/10 transition-all duration-200 font-body text-black placeholder-gray-400;
   }
 
   .input-field:focus {

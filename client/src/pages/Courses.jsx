@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Courses() {
+  const location = useLocation();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAge, setSelectedAge] = useState('All');
@@ -12,6 +13,16 @@ export default function Courses() {
   const [isTyping, setIsTyping] = useState(true);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Handle URL filters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    const cat = params.get('category');
+
+    if (q) setSearchQuery(q);
+    if (cat) setSelectedCategory(cat);
+  }, [location.search]);
 
   const categories = ['All', 'Robotics', 'AI & ML', 'Coding', 'Electronics', 'Game Dev'];
   const ageGroups = ['All', '6-8 years', '9-12 years', '13-16 years', '16+ years'];

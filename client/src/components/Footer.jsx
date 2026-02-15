@@ -138,14 +138,19 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                  <Link to="/privacy" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
                     <span className="text-sm">→</span> Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                  <Link to="/terms" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
                     <span className="text-sm">→</span> Terms of Service
-                  </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cookies" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                    <span className="text-sm">→</span> Cookie Policy
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -159,15 +164,15 @@ export default function Footer() {
                 © {currentYear} Robitro - Minds in Motion. All rights reserved. 🤖
               </p>
               <div className="flex items-center space-x-6 text-sm">
-                <a href="#" className="text-white/70 hover:text-robitro-yellow transition-colors">
+                <Link to="/privacy" className="text-white/70 hover:text-robitro-yellow transition-colors">
                   Privacy
-                </a>
-                <a href="#" className="text-white/70 hover:text-robitro-yellow transition-colors">
+                </Link>
+                <Link to="/terms" className="text-white/70 hover:text-robitro-yellow transition-colors">
                   Terms
-                </a>
-                <a href="#" className="text-white/70 hover:text-robitro-yellow transition-colors">
+                </Link>
+                <Link to="/cookies" className="text-white/70 hover:text-robitro-yellow transition-colors">
                   Cookies
-                </a>
+                </Link>
               </div>
             </div>
           </div>

@@ -14,6 +14,10 @@ import Community from './pages/Community';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import Payment from './pages/Payment';
+import ThankYou from './pages/ThankYou';
+import LegalPage from './pages/LegalPage';
 
 // LMS Pages
 import Dashboard from './pages/Dashboard';
@@ -22,9 +26,11 @@ import MyCourses from './pages/MyCourses';
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProductForm from './pages/admin/AdminProductForm';
 import {
   AdminUsers, AdminPartners, AdminCourses, AdminProducts,
   AdminOrders, AdminCommunity, AdminEnrollments,
+  AdminLeads, AdminCallbacks, AdminProductCategories,
   CmsHero, CmsFeatures, CmsTestimonials, CmsFaqs,
   CmsBanners, CmsTechBites, CmsMakers, CmsProjects,
   CmsChallenges, CmsSocialLinks, CmsSettings,
@@ -73,7 +79,7 @@ export default function App() {
   }
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />
       <Routes>
         {/* ==================== ADMIN ROUTES (own layout) ==================== */}
@@ -90,9 +96,14 @@ export default function App() {
           <Route path="partners" element={<AdminPartners />} />
           <Route path="courses" element={<AdminCourses />} />
           <Route path="products" element={<AdminProducts />} />
+          <Route path="products/add" element={<AdminProductForm />} />
+          <Route path="products/edit/:id" element={<AdminProductForm />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="community" element={<AdminCommunity />} />
           <Route path="enrollments" element={<AdminEnrollments />} />
+          <Route path="leads" element={<AdminLeads />} />
+          <Route path="callbacks" element={<AdminCallbacks />} />
+          <Route path="product-categories" element={<AdminProductCategories />} />
           <Route path="cms/hero" element={<CmsHero />} />
           <Route path="cms/features" element={<CmsFeatures />} />
           <Route path="cms/testimonials" element={<CmsTestimonials />} />
@@ -161,10 +172,17 @@ export default function App() {
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/shop/:id" element={<ProductDetail />} />
                   <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/payment" element={<Payment />} />
+                  <Route path="/thank-you" element={<ThankYou />} />
 
                   {/* Community Route */}
                   <Route path="/community" element={<Community />} />
 
+                  {/* Legal Routes */}
+                  <Route path="/privacy" element={<LegalPage settingKey="privacy_policy" title="Privacy Policy" />} />
+                  <Route path="/terms" element={<LegalPage settingKey="terms_and_conditions" title="Terms of Service" />} />
+                  <Route path="/cookies" element={<LegalPage settingKey="cookie_policy" title="Cookie Policy" />} />
                   {/* Dashboard */}
                   <Route
                     path="/lms/dashboard"

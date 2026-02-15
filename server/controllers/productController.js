@@ -16,7 +16,7 @@ export const getAllProducts = async (req, res) => {
       where.stock = { gt: 0 };
     }
 
-    if (category) where.category = category;
+    if (category) where.categoryId = category;
     if (ageGroup) where.ageGroup = ageGroup;
     if (search) {
       where.OR = [
@@ -45,6 +45,9 @@ export const getAllProducts = async (req, res) => {
       include: {
         partner: {
           select: { name: true, partnerType: true }
+        },
+        category: {
+          select: { name: true, slug: true }
         }
       },
       take: limitNum,
@@ -111,7 +114,8 @@ export const createProduct = async (req, res) => {
       name,
       description,
       price,
-      category,
+      categoryId,
+      categoryName, // Optional display name
       ageGroup,
       images,
       stock,
@@ -121,10 +125,10 @@ export const createProduct = async (req, res) => {
     } = req.body;
 
     // Validation
-    if (!name || !description || !price || !category || !ageGroup) {
+    if (!name || !description || !price || !categoryId) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, description, price, category, and ageGroup',
+        message: 'Please provide name, description, price, and categoryId',
       });
     }
 
@@ -144,7 +148,8 @@ export const createProduct = async (req, res) => {
         name,
         description,
         price: parseFloat(price),
-        category,
+        categoryId,
+        categoryName,
         ageGroup,
         images: imageArray,
         stock: stock ? parseInt(stock) : 0,
@@ -153,6 +158,7 @@ export const createProduct = async (req, res) => {
         status: status || 'active',
         partnerId: req.user.role === 'partner' ? req.user.partnerId : null,
       },
+      include: { category: true }
     });
 
     res.status(201).json({
@@ -191,15 +197,16 @@ export const updateProduct = async (req, res) => {
     }
 
     // Update fields
-    const { name, description, price, stock, category, ageGroup, status, specifications, warranty, images } =
+    const { name, description, price, stock, categoryId, categoryName, ageGroup, status, specifications, warranty, images } =
       req.body;
 
     const updateData = {};
     if (name) updateData.name = name;
     if (description) updateData.description = description;
-    if (price) updateData.price = parseFloat(price);
+    if (price !== undefined) updateData.price = parseFloat(price);
     if (stock !== undefined) updateData.stock = parseInt(stock);
-    if (category) updateData.category = category;
+    if (categoryId) updateData.categoryId = categoryId;
+    if (categoryName) updateData.categoryName = categoryName;
     if (ageGroup) updateData.ageGroup = ageGroup;
     if (status) updateData.status = status;
     if (specifications) updateData.specifications = specifications;
@@ -266,6 +273,25 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+// ==================== GET ALL CATEGORIES ====================
+export const getAllCategories = async (req, res) => {
+  try {
+    const categories = await prisma.productCategory.findMany({
+      orderBy: { name: 'asc' }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: categories
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };

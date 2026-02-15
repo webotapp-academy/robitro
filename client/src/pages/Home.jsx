@@ -341,8 +341,8 @@ export default function Home() {
                 <Link to="/courses" className="btn-primary shadow-xl hover:shadow-2xl text-lg">
                   🎓 Explore Courses
                 </Link>
-                <Link to="/register" className="btn-secondary shadow-lg hover:shadow-xl text-lg">
-                  Start Free Trial →
+                <Link to="/shop" className="btn-secondary shadow-lg hover:shadow-xl text-lg">
+                  Browse Learning Kits →
                 </Link>
               </div>
 

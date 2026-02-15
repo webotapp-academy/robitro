@@ -1,12 +1,17 @@
-const express = require('express');
-const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const authMiddleware = require('../middleware/auth');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import jwt from 'jsonwebtoken';
+import { config } from '../config/database.js';
+import prisma from '../config/db.js';
+import { protect } from '../middleware/auth.js';
 
-const prisma = new PrismaClient();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const router = express.Router();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -41,7 +46,7 @@ const upload = multer({
 });
 
 // Create new order
-router.post('/', authMiddleware, upload.single('paymentProof'), async (req, res) => {
+router.post('/', upload.single('paymentProof'), async (req, res) => {
     try {
         const {
             customerName,
@@ -56,8 +61,27 @@ router.post('/', authMiddleware, upload.single('paymentProof'), async (req, res)
             subtotal,
             shipping,
             tax,
-            totalAmount
+            totalAmount,
+            transactionNumber
         } = req.body;
+
+        console.log('Order request body:', req.body);
+        console.log('Uploaded file:', req.file);
+
+        // Check for token and verify user if present
+        let userId = null;
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            try {
+                const token = req.headers.authorization.split(' ')[1];
+                const decoded = jwt.verify(token, config.jwtSecret);
+                const userExists = await prisma.user.findUnique({ where: { id: decoded.id } });
+                if (userExists) {
+                    userId = userExists.id;
+                }
+            } catch (err) {
+                console.warn('Invalid token provided for order, proceeding as guest:', err.message);
+            }
+        }
 
         // Validate required fields
         if (!customerName || !customerEmail || !customerPhone ||
@@ -75,10 +99,9 @@ router.post('/', authMiddleware, upload.single('paymentProof'), async (req, res)
         // Get payment proof URL
         const paymentProofUrl = req.file ? `/uploads/payment-proofs/${req.file.filename}` : null;
 
-        // Create order in database
         const order = await prisma.order.create({
             data: {
-                userId: req.user.id,
+                userId: userId, // Can be null for guest checkout
                 customerName,
                 customerEmail,
                 customerPhone,
@@ -88,19 +111,17 @@ router.post('/', authMiddleware, upload.single('paymentProof'), async (req, res)
                 shippingCountry: shippingCountry || 'United Kingdom',
                 orderNotes: orderNotes || null,
                 items: parsedItems,
-                subtotal: parseFloat(subtotal),
-                shipping: parseFloat(shipping),
-                tax: parseFloat(tax),
-                totalAmount: parseFloat(totalAmount),
+                subtotal: parseFloat(subtotal) || 0,
+                shipping: parseFloat(shipping) || 0,
+                tax: parseFloat(tax) || 0,
+                totalAmount: parseFloat(totalAmount) || 0,
                 currency: 'GBP',
                 status: 'pending',
                 paymentType: 'bank_transfer',
-                paymentProof: paymentProofUrl
+                paymentProof: paymentProofUrl,
+                transactionNumber: transactionNumber || null
             }
         });
-
-        // TODO: Send confirmation email to customer
-        // TODO: Send notification email to admin
 
         res.status(201).json({
             success: true,
@@ -108,19 +129,32 @@ router.post('/', authMiddleware, upload.single('paymentProof'), async (req, res)
             order
         });
     } catch (error) {
-        console.error('Create order error:', error);
+        console.error('Detailed Create order error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create order',
-            error: error.message
+            message: 'Failed to create order: ' + error.message,
+            error: error.stack
         });
     }
+
 });
 
 // Get order by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Check auth if token provided
+        let user = null;
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            try {
+                const token = req.headers.authorization.split(' ')[1];
+                const decoded = jwt.verify(token, config.jwtSecret);
+                user = await prisma.user.findUnique({ where: { id: decoded.id } });
+            } catch (err) {
+                // Invalid token, treat as guest
+            }
+        }
 
         const order = await prisma.order.findUnique({
             where: { id },
@@ -143,13 +177,17 @@ router.get('/:id', authMiddleware, async (req, res) => {
             });
         }
 
-        // Check if user owns this order or is admin
-        if (order.userId !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied'
-            });
+        // Access Control Logic
+        if (order.userId) {
+            // If order belongs to a user, requester MUST be that user or admin
+            if (!user || (order.userId !== user.id && user.role !== 'admin')) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Access denied'
+                });
+            }
         }
+        // If order.userId is null (guest order), allow access (UUID is the secret)
 
         res.json({
             success: true,
@@ -166,7 +204,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Get all orders for current user
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', protect, async (req, res) => {
     try {
         const { status, page = 1, limit = 10 } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -210,7 +248,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Update order status (admin only)
-router.patch('/:id/status', authMiddleware, async (req, res) => {
+router.patch('/:id/status', protect, async (req, res) => {
     try {
         // Check if user is admin
         if (req.user.role !== 'admin') {
@@ -233,8 +271,6 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
             data: updateData
         });
 
-        // TODO: Send status update email to customer
-
         res.json({
             success: true,
             message: 'Order status updated',
@@ -250,63 +286,4 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     }
 });
 
-// Get all orders (admin only)
-router.get('/admin/all', authMiddleware, async (req, res) => {
-    try {
-        // Check if user is admin
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Admin only.'
-            });
-        }
-
-        const { status, page = 1, limit = 20 } = req.query;
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-
-        const where = {};
-        if (status) {
-            where.status = status;
-        }
-
-        const [orders, total] = await Promise.all([
-            prisma.order.findMany({
-                where,
-                include: {
-                    user: {
-                        select: {
-                            id: true,
-                            firstName: true,
-                            lastName: true,
-                            email: true
-                        }
-                    }
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: parseInt(limit)
-            }),
-            prisma.order.count({ where })
-        ]);
-
-        res.json({
-            success: true,
-            orders,
-            pagination: {
-                total,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                pages: Math.ceil(total / parseInt(limit))
-            }
-        });
-    } catch (error) {
-        console.error('Get all orders error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch orders',
-            error: error.message
-        });
-    }
-});
-
-module.exports = router;
+export default router;

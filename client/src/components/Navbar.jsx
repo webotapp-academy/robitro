@@ -1,11 +1,39 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cartCount, setCartCount] = useState(0);
+
+  const updateCartCount = () => {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+    setCartCount(count);
+  };
+
+  useEffect(() => {
+    updateCartCount();
+    const handleCartUpdate = () => updateCartCount();
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('storage', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('storage', handleCartUpdate);
+    };
+  }, []);
+
+  const handleSearch = (e) => {
+    if (e) e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -73,7 +101,11 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               {/* Cart badge */}
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-robitro-red text-white text-xs font-bold rounded-full flex items-center justify-center">0</span>
+              {cartCount > 0 && (
+                <span key={cartCount} className="absolute -top-1 -right-1 w-5 h-5 bg-robitro-red text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pop-in">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
             {/* Divider */}
@@ -196,19 +228,24 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
         {/* Search Bar (Expanded) */}
         {searchOpen && (
           <div className="py-4 border-t border-gray-100">
-            <div className="relative max-w-2xl mx-auto">
+            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
               <input
                 type="search"
                 placeholder="Search courses, products, community..."
                 className="w-full px-6 py-3 bg-gray-50 border border-gray-200 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none focus:border-robitro-blue focus:ring-2 focus:ring-blue-100 transition-colors"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
               />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-robitro-blue text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-robitro-blue text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
-            </div>
+            </form>
           </div>
         )}
 

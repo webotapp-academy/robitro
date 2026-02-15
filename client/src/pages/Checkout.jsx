@@ -124,7 +124,7 @@ export default function Checkout() {
                                             onChange={handleInputChange}
                                             required
                                             placeholder="John Doe"
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue"
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-black"
                                         />
                                     </div>
                                     <div>
@@ -138,7 +138,7 @@ export default function Checkout() {
                                             onChange={handleInputChange}
                                             required
                                             placeholder="john@example.com"
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue"
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-black"
                                         />
                                     </div>
                                     <div className="md:col-span-2">
@@ -152,7 +152,7 @@ export default function Checkout() {
                                             onChange={handleInputChange}
                                             required
                                             placeholder="+44 7700 900000"
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue"
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-black"
                                         />
                                     </div>
                                 </div>
@@ -176,7 +176,7 @@ export default function Checkout() {
                                             onChange={handleInputChange}
                                             required
                                             placeholder="123 Main Street"
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue"
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-black"
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,7 +191,7 @@ export default function Checkout() {
                                                 onChange={handleInputChange}
                                                 required
                                                 placeholder="London"
-                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue"
+                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-black"
                                             />
                                         </div>
                                         <div>
@@ -205,7 +205,7 @@ export default function Checkout() {
                                                 onChange={handleInputChange}
                                                 required
                                                 placeholder="SW1A 1AA"
-                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue"
+                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-black"
                                             />
                                         </div>
                                     </div>
@@ -219,7 +219,7 @@ export default function Checkout() {
                                             value={formData.shippingCountry}
                                             onChange={handleInputChange}
                                             readOnly
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-black font-semibold"
                                         />
                                     </div>
                                 </div>
@@ -237,7 +237,7 @@ export default function Checkout() {
                                     onChange={handleInputChange}
                                     rows={4}
                                     placeholder="Any special instructions for your order..."
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue resize-none"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue resize-none text-black"
                                 />
                             </div>
                         </div>

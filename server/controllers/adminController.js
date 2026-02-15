@@ -303,6 +303,16 @@ export const upsertSiteSetting = async (req, res) => {
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
+export const updateSiteSetting = async (req, res) => {
+    try {
+        const data = await prisma.siteSetting.update({
+            where: { id: req.params.id },
+            data: req.body
+        });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
 export const deleteSiteSetting = async (req, res) => {
     try {
         await prisma.siteSetting.delete({ where: { id: req.params.id } });
@@ -526,5 +536,103 @@ export const deleteCommunityPost = async (req, res) => {
     try {
         await prisma.communityPost.delete({ where: { id: req.params.id } });
         res.json({ success: true, message: 'Post deleted' });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+// ========================
+// LEADS MANAGEMENT
+// ========================
+export const getLeads = async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const [data, total] = await Promise.all([
+            prisma.lead.findMany({
+                take: +limit,
+                skip: (+page - 1) * +limit,
+                orderBy: { createdAt: 'desc' },
+                include: { course: { select: { title: true } } }
+            }),
+            prisma.lead.count(),
+        ]);
+        res.json({ success: true, data, pagination: { total, page: +page, pages: Math.ceil(total / +limit) } });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const updateLead = async (req, res) => {
+    try {
+        const data = await prisma.lead.update({ where: { id: req.params.id }, data: req.body });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const deleteLead = async (req, res) => {
+    try {
+        await prisma.lead.delete({ where: { id: req.params.id } });
+        res.json({ success: true, message: 'Lead deleted' });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+// ========================
+// CALLBACKS MANAGEMENT
+// ========================
+export const getCallbacks = async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const [data, total] = await Promise.all([
+            prisma.callbackRequest.findMany({
+                take: +limit,
+                skip: (+page - 1) * +limit,
+                orderBy: { createdAt: 'desc' },
+                include: { course: { select: { title: true } } }
+            }),
+            prisma.callbackRequest.count(),
+        ]);
+        res.json({ success: true, data, pagination: { total, page: +page, pages: Math.ceil(total / +limit) } });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const updateCallback = async (req, res) => {
+    try {
+        const data = await prisma.callbackRequest.update({ where: { id: req.params.id }, data: req.body });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const deleteCallback = async (req, res) => {
+    try {
+        await prisma.callbackRequest.delete({ where: { id: req.params.id } });
+        res.json({ success: true, message: 'Callback request deleted' });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+// ========================
+// PRODUCT CATEGORIES
+// ========================
+export const getProductCategories = async (req, res) => {
+    try {
+        const data = await prisma.productCategory.findMany({ orderBy: { name: 'asc' } });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const createProductCategory = async (req, res) => {
+    try {
+        const { name, slug, description } = req.body;
+        const data = await prisma.productCategory.create({ data: { name, slug, description } });
+        res.status(201).json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const updateProductCategory = async (req, res) => {
+    try {
+        const data = await prisma.productCategory.update({ where: { id: req.params.id }, data: req.body });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const deleteProductCategory = async (req, res) => {
+    try {
+        await prisma.productCategory.delete({ where: { id: req.params.id } });
+        res.json({ success: true, message: 'Category deleted' });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };

@@ -8,6 +8,10 @@ import productRoutes from './routes/products.js';
 import enrollmentRoutes from './routes/enrollments.js';
 import communityRoutes from './routes/community.js';
 import adminRoutes from './routes/admin.js';
+import orderRoutes from './routes/orders.js';
+import cmsRoutes from './routes/cms.js';
+import enquiryRoutes from './routes/enquiry.js';
+
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -46,6 +50,8 @@ let distPath = possibleDistPaths.find(p => {
 }) || possibleDistPaths[0];
 
 app.use(express.static(distPath));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Check Prisma/Neon DB connection
 prisma.$connect()
@@ -64,6 +70,10 @@ app.use('/api/products', productRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/cms', cmsRoutes);
+app.use('/api/enquiry', enquiryRoutes);
+
 
 // Health check
 app.get('/api/health', (req, res) => {

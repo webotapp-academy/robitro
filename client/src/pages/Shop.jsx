@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 export default function Shop() {
+  const location = useLocation();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
@@ -15,6 +17,34 @@ export default function Shop() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [categories, setCategories] = useState(['All']);
+
+  // Handle URL filters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    const cat = params.get('category');
+
+    if (q) setSearchQuery(q);
+    if (cat) setSelectedCategory(cat);
+  }, [location.search]);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/products/categories');
+        if (res.data.success) {
+          const names = res.data.data.map(c => c.name);
+          setCategories(['All', ...names]);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   // Auto-slide banner
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,7 +53,6 @@ export default function Shop() {
     return () => clearInterval(interval);
   }, []);
 
-  const categories = ['All', 'Robotics', 'Electronics', 'Arduino', 'AI & ML', 'Drones', 'Solar'];
   const ageGroups = ['All', '5+ Ages', '8+ Ages', '10+ Ages', '12+ Ages', '14+ Ages'];
   const priceRanges = ['All', 'Under £20', '£20-£50', '£50-£100', 'Over £100'];
 
@@ -100,7 +129,9 @@ export default function Shop() {
 
   // Filter products
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' ||
+      product.categoryName === selectedCategory ||
+      product.category?.name === selectedCategory;
     const matchesAge = selectedAgeGroup === 'All' || product.ageGroup === selectedAgeGroup;
     const matchesSearch = !searchQuery ||
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -146,7 +177,26 @@ export default function Shop() {
     }
 
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert('Added to cart! 🛒');
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    Swal.fire({
+      title: 'Added to Cart!',
+      text: `${product.name} has been added to your cart.`,
+      imageUrl: product.image,
+      imageWidth: 100,
+      imageHeight: 100,
+      imageAlt: product.name,
+      icon: 'success',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Go to Cart',
+      cancelButtonText: 'Continue Shopping'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = '/cart';
+      }
+    });
   };
 
   const handleCallbackSubmit = (e) => {
@@ -359,7 +409,7 @@ export default function Shop() {
                           {category}
                           {category !== 'All' && (
                             <span className="float-right text-sm opacity-60">
-                              {products.filter(p => p.category === category).length}
+                              {products.filter(p => p.categoryName === category || p.category?.name === category).length}
                             </span>
                           )}
                         </button>
@@ -511,7 +561,7 @@ export default function Shop() {
                       <div className="p-5 flex flex-col flex-grow">
                         {/* Category & Age */}
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-robitro-blue uppercase tracking-wide">{product.category}</span>
+                          <span className="text-xs font-semibold text-robitro-blue uppercase tracking-wide">{product.categoryName || product.category?.name}</span>
                           <span className="text-xs text-gray-500">{product.ageGroup}</span>
                         </div>
 

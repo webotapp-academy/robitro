@@ -59,53 +59,67 @@ model Partner {
   @@index([name])
 }
 
+model ProductCategory {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
 model Product {
-  id             String        @id @default(uuid())
+  id             String           @id @default(uuid())
   name           String
   description    String
   price          Float
   ageGroup       String
   images         String[]
-  stock          Int           @default(0)
-  category       String
-  rating         Float         @default(0)
-  reviewsCount   Int           @default(0)
-  specifications Json?         @default("{}")
+  stock          Int              @default(0)
+  rating         Float            @default(0)
+  reviewsCount   Int              @default(0)
+  specifications Json?            @default("{}")
   warranty       Json?
-  status         ProductStatus @default(active)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  metadata       Json?         @default("{}")
+  status         ProductStatus    @default(active)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   partnerId      String?
-  partner        Partner?      @relation(fields: [partnerId], references: [id])
+  metadata       Json?            @default("{}")
+  categoryId     String?
+  categoryName   String?
+  category       ProductCategory? @relation(fields: [categoryId], references: [id])
+  partner        Partner?         @relation(fields: [partnerId], references: [id])
 
-  @@index([category])
+  @@index([categoryId])
   @@index([status])
 }
 
 model Course {
-  id              String       @id @default(uuid())
+  id              String            @id @default(uuid())
   title           String
   description     String
   ageGroup        String
-  level           CourseLevel  @default(beginner)
-  price           Float        @default(0)
-  thumbnail       String?      @default("https://via.placeholder.com/400x300")
-  isLive          Boolean      @default(false)
+  level           CourseLevel       @default(beginner)
+  price           Float             @default(0)
+  thumbnail       String?           @default("https://via.placeholder.com/400x300")
+  isLive          Boolean           @default(false)
   startDate       DateTime?
   endDate         DateTime?
   category        String
-  rating          Float        @default(0)
-  enrollmentCount Int          @default(0)
-  status          CourseStatus @default(draft)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  metadata        Json?        @default("{}")
+  rating          Float             @default(0)
+  enrollmentCount Int               @default(0)
+  status          CourseStatus      @default(draft)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   instructorId    String
   partnerId       String?
-  instructor      User         @relation("InstructorCourses", fields: [instructorId], references: [id])
-  partner         Partner?     @relation(fields: [partnerId], references: [id])
+  metadata        Json?             @default("{}")
+  callbacks       CallbackRequest[]
+  instructor      User              @relation("InstructorCourses", fields: [instructorId], references: [id])
+  partner         Partner?          @relation(fields: [partnerId], references: [id])
   enrollments     Enrollment[]
+  leads           Lead[]
   modules         Module[]
 
   @@index([category])
@@ -161,36 +175,30 @@ model CompletedLesson {
 }
 
 model Order {
-  id               String   @id @default(uuid())
-  userId           String
-  items            Json[]
-  subtotal         Float
-  shipping         Float    @default(0)
-  tax              Float    @default(0)
-  totalAmount      Float
-  currency         String   @default("GBP")
-  status           String   @default("pending")
-  paymentType      String?  @default("bank_transfer")
-  paymentProof     String?  // URL to uploaded payment proof image
-  
-  // Customer Details
-  customerName     String
-  customerEmail    String
-  customerPhone    String
-  
-  // Shipping Address
-  shippingAddress  String
-  shippingCity     String
-  shippingPostcode String
-  shippingCountry  String   @default("United Kingdom")
-  
-  // Optional fields
-  orderNotes       String?
-  trackingNumber   String?
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  user             User     @relation(fields: [userId], references: [id])
+  id                String   @id @default(uuid())
+  userId            String?
+  items             Json[]
+  totalAmount       Float
+  currency          String   @default("GBP")
+  status            String   @default("pending")
+  paymentType       String?  @default("bank_transfer")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  customerEmail     String
+  customerName      String
+  customerPhone     String
+  orderNotes        String?
+  paymentProof      String?
+  shipping          Float    @default(0)
+  shippingAddress   String
+  shippingCity      String
+  shippingCountry   String   @default("United Kingdom")
+  shippingPostcode  String
+  subtotal          Float
+  tax               Float    @default(0)
+  trackingNumber    String?
+  transactionNumber String?
+  user              User?    @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([customerEmail])
@@ -414,6 +422,31 @@ model SocialLink {
   updatedAt     DateTime @updatedAt
 
   @@index([isActive])
+}
+
+model Lead {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  courseId  String?
+  status    String   @default("pending")
+  type      String   @default("enrollment")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course?  @relation(fields: [courseId], references: [id])
+}
+
+model CallbackRequest {
+  id            String   @id @default(uuid())
+  name          String
+  phone         String
+  preferredTime String?
+  courseId      String?
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  course        Course?  @relation(fields: [courseId], references: [id])
 }
 
 enum Role {

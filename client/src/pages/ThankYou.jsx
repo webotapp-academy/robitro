@@ -56,27 +56,27 @@ export default function ThankYou() {
                     <div className="inline-flex items-center justify-center w-24 h-24 bg-green-500 rounded-full mb-6 animate-bounce">
                         <CheckCircle className="text-white" size={56} />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-robitro-navy mb-4">
+                    <h1 className="text-2xl md:text-3xl font-black text-black mb-4">
                         Order Placed Successfully! 🎉
                     </h1>
-                    <p className="text-xl text-gray-600">
+                    <p className="text-lg text-black">
                         Thank you for your purchase! We've received your order.
                     </p>
                 </div>
 
                 {/* Order Details Card */}
                 {order && (
-                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mb-8">
                         {/* Order Header */}
-                        <div className="bg-gradient-to-r from-robitro-blue to-robitro-purple p-8 text-white">
+                        <div className="bg-gray-100 p-8 text-black border-b border-gray-200">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 <div>
-                                    <p className="text-sm text-white/80 mb-1">Order Number</p>
-                                    <p className="text-2xl font-black">#{order.id.slice(0, 8).toUpperCase()}</p>
+                                    <p className="text-xs uppercase tracking-wider font-bold text-black mb-1">Order Number</p>
+                                    <p className="text-xl font-black text-black">#{order.id.slice(0, 8).toUpperCase()}</p>
                                 </div>
                                 <div className="text-left md:text-right">
-                                    <p className="text-sm text-white/80 mb-1">Order Total</p>
-                                    <p className="text-3xl font-black text-robitro-yellow">£{order.totalAmount.toFixed(2)}</p>
+                                    <p className="text-xs uppercase tracking-wider font-bold text-black mb-1">Order Total</p>
+                                    <p className="text-2xl font-black text-black">£{order.totalAmount.toFixed(2)}</p>
                                 </div>
                             </div>
                         </div>
@@ -86,46 +86,46 @@ export default function ThankYou() {
                             <div className="grid md:grid-cols-2 gap-8 mb-8">
                                 {/* Customer Details */}
                                 <div>
-                                    <h3 className="text-lg font-bold text-robitro-navy mb-4 flex items-center gap-2">
-                                        <Mail className="text-robitro-blue" size={20} />
+                                    <h3 className="text-base font-bold text-black mb-4 flex items-center gap-2">
+                                        <Mail className="text-black" size={18} />
                                         Customer Details
                                     </h3>
-                                    <div className="space-y-2 text-gray-700">
-                                        <p><span className="font-semibold">Name:</span> {order.customerName}</p>
-                                        <p><span className="font-semibold">Email:</span> {order.customerEmail}</p>
-                                        <p><span className="font-semibold">Phone:</span> {order.customerPhone}</p>
+                                    <div className="space-y-2 text-black text-sm">
+                                        <p className="text-black"><span className="font-bold">Name:</span> {order.customerName}</p>
+                                        <p className="text-black"><span className="font-bold">Email:</span> {order.customerEmail}</p>
+                                        <p className="text-black"><span className="font-bold">Phone:</span> {order.customerPhone}</p>
                                     </div>
                                 </div>
 
                                 {/* Shipping Address */}
                                 <div>
-                                    <h3 className="text-lg font-bold text-robitro-navy mb-4 flex items-center gap-2">
-                                        <Package className="text-robitro-blue" size={20} />
+                                    <h3 className="text-base font-bold text-black mb-4 flex items-center gap-2">
+                                        <Package className="text-black" size={18} />
                                         Shipping Address
                                     </h3>
-                                    <div className="text-gray-700">
-                                        <p>{order.shippingAddress}</p>
-                                        <p>{order.shippingCity}, {order.shippingPostcode}</p>
-                                        <p>{order.shippingCountry}</p>
+                                    <div className="text-black text-sm">
+                                        <p className="text-black">{order.shippingAddress}</p>
+                                        <p className="text-black">{order.shippingCity}, {order.shippingPostcode}</p>
+                                        <p className="text-black">{order.shippingCountry}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Order Items */}
                             <div className="mb-8">
-                                <h3 className="text-lg font-bold text-robitro-navy mb-4">Order Items</h3>
+                                <h3 className="text-base font-bold text-black mb-4">Order Items</h3>
                                 <div className="space-y-3">
                                     {order.items.map((item, index) => (
-                                        <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-xl">
+                                        <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
                                             <img
                                                 src={item.image || item.images?.[0]}
                                                 alt={item.name}
-                                                className="w-20 h-20 rounded-lg object-cover"
+                                                className="w-16 h-16 rounded-lg object-cover grayscale-[0.5]"
                                             />
                                             <div className="flex-grow">
-                                                <h4 className="font-semibold text-robitro-navy">{item.name}</h4>
-                                                <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                                                <p className="text-sm font-bold text-robitro-blue">£{item.price} × {item.quantity} = £{(item.price * item.quantity).toFixed(2)}</p>
+                                                <h4 className="text-sm font-bold text-black">{item.name}</h4>
+                                                <p className="text-xs text-black font-medium">Quantity: {item.quantity}</p>
+                                                <p className="text-sm font-black text-black mt-1">£{item.price} × {item.quantity} = £{(item.price * item.quantity).toFixed(2)}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -133,24 +133,24 @@ export default function ThankYou() {
                             </div>
 
                             {/* Price Breakdown */}
-                            <div className="bg-gray-50 rounded-xl p-6">
-                                <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
-                                    <div className="flex justify-between text-gray-700">
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <div className="space-y-2 mb-4 pb-4 border-b border-gray-200 text-sm">
+                                    <div className="flex justify-between text-black">
                                         <span>Subtotal</span>
-                                        <span className="font-semibold">£{order.subtotal.toFixed(2)}</span>
+                                        <span className="font-bold">£{order.subtotal.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between text-gray-700">
+                                    <div className="flex justify-between text-black">
                                         <span>Shipping</span>
-                                        <span className="font-semibold">{order.shipping === 0 ? 'FREE' : `£${order.shipping.toFixed(2)}`}</span>
+                                        <span className="font-bold">{order.shipping === 0 ? 'FREE' : `£${order.shipping.toFixed(2)}`}</span>
                                     </div>
-                                    <div className="flex justify-between text-gray-700">
+                                    <div className="flex justify-between text-black">
                                         <span>Tax (20%)</span>
-                                        <span className="font-semibold">£{order.tax.toFixed(2)}</span>
+                                        <span className="font-bold">£{order.tax.toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xl font-bold text-robitro-navy">Total Paid</span>
-                                    <span className="text-2xl font-black text-robitro-blue">£{order.totalAmount.toFixed(2)}</span>
+                                    <span className="text-lg font-bold text-black">Total Paid</span>
+                                    <span className="text-xl font-black text-black">£{order.totalAmount.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -158,35 +158,35 @@ export default function ThankYou() {
                 )}
 
                 {/* What's Next */}
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 mb-8">
-                    <h2 className="text-2xl font-bold text-robitro-navy mb-4">What Happens Next?</h2>
-                    <div className="space-y-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-8">
+                    <h2 className="text-lg font-bold text-black mb-6">What Happens Next?</h2>
+                    <div className="space-y-6">
                         <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-robitro-blue text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <div className="flex-shrink-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
                             <div>
-                                <h3 className="font-bold text-robitro-navy mb-1">Payment Verification</h3>
-                                <p className="text-gray-700">Our team will verify your payment proof within 24 hours.</p>
+                                <h3 className="text-sm font-bold text-black mb-1">Payment Verification</h3>
+                                <p className="text-sm text-black">Our team will verify your payment proof within 24 hours.</p>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-robitro-blue text-white rounded-full flex items-center justify-center font-bold">2</div>
+                            <div className="flex-shrink-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
                             <div>
-                                <h3 className="font-bold text-robitro-navy mb-1">Order Confirmation</h3>
-                                <p className="text-gray-700">You'll receive a confirmation email at <span className="font-semibold">{order?.customerEmail}</span></p>
+                                <h3 className="text-sm font-bold text-black mb-1">Order Confirmation</h3>
+                                <p className="text-sm text-black">You'll receive a confirmation email at <span className="font-bold">{order?.customerEmail}</span></p>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-robitro-blue text-white rounded-full flex items-center justify-center font-bold">3</div>
+                            <div className="flex-shrink-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
                             <div>
-                                <h3 className="font-bold text-robitro-navy mb-1">Shipping</h3>
-                                <p className="text-gray-700">Your order will be dispatched within 2-3 business days.</p>
+                                <h3 className="text-sm font-bold text-black mb-1">Shipping</h3>
+                                <p className="text-sm text-black">Your order will be dispatched within 2-3 business days.</p>
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-robitro-blue text-white rounded-full flex items-center justify-center font-bold">4</div>
+                            <div className="flex-shrink-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
                             <div>
-                                <h3 className="font-bold text-robitro-navy mb-1">Delivery</h3>
-                                <p className="text-gray-700">Estimated delivery: 5-7 business days across the UK.</p>
+                                <h3 className="text-sm font-bold text-black mb-1">Delivery</h3>
+                                <p className="text-sm text-black">Estimated delivery: 5-7 business days across the UK.</p>
                             </div>
                         </div>
                     </div>
@@ -196,14 +196,14 @@ export default function ThankYou() {
                 <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                         to="/"
-                        className="flex-1 bg-robitro-yellow text-gray-900 font-bold py-4 rounded-xl hover:shadow-lg transition-all text-center flex items-center justify-center gap-2"
+                        className="flex-1 bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-900 transition-all text-center flex items-center justify-center gap-2"
                     >
-                        <Home size={20} />
+                        <Home size={18} />
                         Back to Home
                     </Link>
                     <Link
                         to="/shop"
-                        className="flex-1 bg-white text-robitro-navy font-semibold py-4 rounded-xl hover:shadow-md transition-all text-center border-2 border-robitro-navy"
+                        className="flex-1 bg-white text-black font-bold py-4 rounded-xl shadow-sm hover:bg-gray-50 transition-all text-center border-2 border-black"
                     >
                         Continue Shopping
                     </Link>
@@ -211,9 +211,9 @@ export default function ThankYou() {
 
                 {/* Support */}
                 <div className="mt-8 text-center">
-                    <p className="text-gray-600">
+                    <p className="text-black text-sm">
                         Need help? Contact us at{' '}
-                        <a href="mailto:support@robitro.com" className="text-robitro-blue font-semibold hover:underline">
+                        <a href="mailto:support@robitro.com" className="font-bold underline hover:no-underline">
                             support@robitro.com
                         </a>
                     </p>

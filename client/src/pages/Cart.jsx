@@ -25,6 +25,7 @@ export default function Cart() {
   const updateCart = (updatedCart) => {
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const removeItem = (productId) => {
@@ -49,18 +50,6 @@ export default function Cart() {
   const total = subtotal + shipping + tax;
 
   const handleCheckout = () => {
-    if (cart.length === 0) {
-      alert('Your cart is empty');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please login to proceed with checkout');
-      navigate('/login');
-      return;
-    }
-
     // Navigate to checkout page
     navigate('/checkout');
   };
@@ -124,7 +113,7 @@ export default function Cart() {
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <h3 className="text-lg font-bold text-robitro-navy mb-1">{item.name}</h3>
-                            <p className="text-sm text-gray-500">{item.category}</p>
+                            <p className="text-sm text-gray-500">{item.categoryName || item.category?.name || (typeof item.category === 'string' ? item.category : 'Product')}</p>
                           </div>
                           <button
                             onClick={() => removeItem(item.id)}
