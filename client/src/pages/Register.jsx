@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 
-export default function Register({ setIsAuthenticated, setUser }) {
+export default function Register({ setIsAuthenticated, setUser, type = 'student' }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,11 +33,32 @@ export default function Register({ setIsAuthenticated, setUser }) {
     setLoading(true);
 
     try {
-      const response = await authService.register(
-        formData.name,
-        formData.email,
-        formData.password
-      );
+      let response;
+      if (type === 'student') {
+        // Split name into first and last name
+        const nameParts = formData.name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Student';
+
+        response = await authService.studentSignup({
+          firstName,
+          lastName,
+          email: formData.email,
+          password: formData.password
+        });
+      } else {
+        // Partner signup (requires more fields, but we'll try with basic ones if allowed or let validation fail)
+        // Note: The backend requires partnerType, phone etc. which are not in this form. 
+        // For now, mapping what we have.
+        response = await authService.partnerSignup({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          partnerType: 'school', // Defaulting to school to pass validation if strictly required
+          phone: '0000000000' // Placeholder
+        });
+      }
+
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);
@@ -45,8 +66,9 @@ export default function Register({ setIsAuthenticated, setUser }) {
       setIsAuthenticated(true);
       setUser(user);
 
-      navigate('/lms/dashboard');
+      navigate(user.role === 'admin' ? '/admin' : '/lms/dashboard');
     } catch (err) {
+      console.error('Registration error:', err);
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);

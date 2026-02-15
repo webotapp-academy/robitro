@@ -152,7 +152,7 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
                         </Link>
                       )}
                       <Link
-                        to="/lms/dashboard"
+                        to="/lms/profile"
                         className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-robitro-blue hover:bg-blue-50 transition-all"
                         onClick={() => setDropdownOpen(false)}
                       >

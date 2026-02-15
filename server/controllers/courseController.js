@@ -1,9 +1,19 @@
 import prisma from '../config/db.js';
+import cache from '../utils/cache.js';
 
 // ==================== GET ALL COURSES ====================
 export const getAllCourses = async (req, res) => {
   try {
-    const { category, level, ageGroup, search, page = 1, limit = 10, skip = 0, status } = req.query;
+    const { category, level, ageGroup, search, page = 1, limit = 12, skip = 0, status } = req.query;
+
+    // Generate cache key
+    const cacheKey = `courses:${JSON.stringify(req.query)}`;
+
+    // Check cache first
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return res.status(200).json(cached);
+    }
 
     // Build filter object - don't filter by status if admin is requesting
     let where = {};
@@ -41,9 +51,9 @@ export const getAllCourses = async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    res.status(200).json({
+    const response = {
       success: true,
-      data: courses, // Changed from 'courses' to 'data' for admin panel compatibility
+      data: courses,
       pagination: {
         total,
         page: pageNum,
@@ -53,7 +63,12 @@ export const getAllCourses = async (req, res) => {
       // Keep legacy fields for backward compatibility
       count: courses.length,
       courses,
-    });
+    };
+
+    // Cache the response for 30 seconds
+    cache.set(cacheKey, response, 30);
+
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({
       success: false,

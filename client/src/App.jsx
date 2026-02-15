@@ -22,6 +22,8 @@ import LegalPage from './pages/LegalPage';
 // LMS Pages
 import Dashboard from './pages/Dashboard';
 import MyCourses from './pages/MyCourses';
+import Orders from './pages/Orders';
+import Profile from './pages/Profile';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
@@ -209,6 +211,26 @@ export default function App() {
                     element={
                       <ProtectedRoute isAuthenticated={isAuthenticated}>
                         <CourseDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Orders */}
+                  <Route
+                    path="/orders"
+                    element={
+                      <ProtectedRoute isAuthenticated={isAuthenticated}>
+                        <Orders />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Profile */}
+                  <Route
+                    path="/lms/profile"
+                    element={
+                      <ProtectedRoute isAuthenticated={isAuthenticated}>
+                        <Profile user={user} setUser={setUser} />
                       </ProtectedRoute>
                     }
                   />

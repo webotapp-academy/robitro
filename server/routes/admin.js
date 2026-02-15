@@ -14,6 +14,7 @@ import {
     getOrders,
     updateOrder,
     getEnrollments,
+    updateEnrollment,
     getCommunityPosts,
     updateCommunityPost,
     deleteCommunityPost,
@@ -102,6 +103,7 @@ router.put('/orders/:id', updateOrder);
 
 // Enrollments
 router.get('/enrollments', getEnrollments);
+router.put('/enrollments/:id', updateEnrollment);
 
 // Community
 router.get('/community', getCommunityPosts);

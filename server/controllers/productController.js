@@ -1,9 +1,21 @@
 import prisma from '../config/db.js';
+import cache from '../utils/cache.js';
 
 // ==================== GET ALL PRODUCTS ====================
 export const getAllProducts = async (req, res) => {
   try {
-    const { category, ageGroup, search, minPrice, maxPrice, page = 1, limit = 12, skip = 0, status } = req.query;
+    const { category, ageGroup, search, minPrice, maxPrice, page = 1, limit = 12, skip = 0, status, includeRelations } = req.query;
+
+    // Generate cache key from query params
+    const cacheKey = `products:${JSON.stringify(req.query)}`;
+
+    // Check cache first (skip cache for admin panel)
+    if (!req.path.includes('/admin/')) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return res.status(200).json(cached);
+      }
+    }
 
     // Build filter object - don't filter by status if admin is requesting
     let where = {};
@@ -36,28 +48,35 @@ export const getAllProducts = async (req, res) => {
     const limitNum = parseInt(limit);
     const skipNum = skip ? parseInt(skip) : (pageNum - 1) * limitNum;
 
-    // Get total count
+    // Get total count (fast, no joins)
     const total = await prisma.product.count({ where });
 
-    // Get products with pagination
-    const products = await prisma.product.findMany({
+    // Build query options
+    const queryOptions = {
       where,
-      include: {
+      take: limitNum,
+      skip: skipNum,
+      orderBy: { createdAt: 'desc' },
+    };
+
+    // Only include relations if explicitly requested (for admin panel)
+    if (includeRelations === 'true') {
+      queryOptions.include = {
         partner: {
           select: { name: true, partnerType: true }
         },
         category: {
           select: { name: true, slug: true }
         }
-      },
-      take: limitNum,
-      skip: skipNum,
-      orderBy: { createdAt: 'desc' },
-    });
+      };
+    }
 
-    res.status(200).json({
+    // Get products with pagination
+    const products = await prisma.product.findMany(queryOptions);
+
+    const response = {
       success: true,
-      data: products, // Changed from 'products' to 'data' for admin panel compatibility
+      data: products,
       pagination: {
         total,
         page: pageNum,
@@ -67,7 +86,14 @@ export const getAllProducts = async (req, res) => {
       // Keep legacy fields for backward compatibility
       count: products.length,
       products,
-    });
+    };
+
+    // Cache the response for 30 seconds (skip cache for admin panel)
+    if (!req.path.includes('/admin/')) {
+      cache.set(cacheKey, response, 30);
+    }
+
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({
       success: false,

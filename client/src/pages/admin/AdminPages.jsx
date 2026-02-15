@@ -307,11 +307,23 @@ export function AdminCommunity() {
 }
 
 export function AdminEnrollments() {
-    return <CrudPage title="Enrollments" endpoint="/enrollments" searchable={false} fields={[
-        { key: 'id', label: 'ID', showInTable: true, editable: false },
+    return <CrudPage title="Enrollments" endpoint="/enrollments" searchable={false} canAdd={false} fields={[
+        { key: 'studentName', label: 'Student', showInTable: true, editable: false },
+        { key: 'studentEmail', label: 'Email', showInTable: true, editable: false },
+        { key: 'courseTitle', label: 'Course', showInTable: true, editable: false },
+        { key: 'paymentAmount', label: 'Amount (£)', showInTable: true, editable: false },
+        {
+            key: 'paymentStatus', label: 'Payment', type: 'select', showInTable: true, options: [
+                { value: 'pending', label: 'Pending' }, { value: 'paid', label: 'Paid' }, { value: 'failed', label: 'Failed' },
+            ]
+        },
+        { key: 'transactionNumber', label: 'Transaction #', showInTable: true, editable: false },
+        {
+            key: 'status', label: 'Enrollment Status', type: 'select', showInTable: true, options: [
+                { value: 'ongoing', label: 'Ongoing' }, { value: 'completed', label: 'Completed' }, { value: 'dropped', label: 'Dropped' },
+            ]
+        },
         { key: 'progressPercentage', label: 'Progress %', showInTable: true, editable: false },
-        { key: 'status', label: 'Status', showInTable: true, editable: false },
-        { key: 'certificateIssued', label: 'Certificate', type: 'switch', showInTable: true, editable: false },
     ]} />;
 }
 

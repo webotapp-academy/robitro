@@ -1,23 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { enrollmentService } from '../services/authService';
-import Layout from '../components/Layout';
 
-export default function MyCourses() {
+export default function MyCourses({ user }) {
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
-  const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState('all'); // all, ongoing, completed
+  const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchMyCourses();
-  }, []);
-
-  useEffect(() => {
-    applyFilter();
-  }, [filter, courses]);
+  useEffect(() => { fetchMyCourses(); }, []);
 
   const fetchMyCourses = async () => {
     try {
@@ -25,204 +18,231 @@ export default function MyCourses() {
       const response = await enrollmentService.getMyEnrolledCourses();
       setCourses(response.data.courses || []);
     } catch (err) {
-      setError('Failed to load your courses: ' + (err.response?.data?.message || err.message));
+      setError('Failed to load your courses');
     } finally {
       setLoading(false);
     }
   };
 
-  const applyFilter = () => {
-    let filtered = courses;
+  const filtered = courses.filter(c => {
+    const matchFilter = filter === 'all' || (filter === 'ongoing' && c.progressPercentage < 100) || (filter === 'completed' && c.progressPercentage === 100);
+    const matchSearch = !searchQuery || c.title?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchFilter && matchSearch;
+  });
 
-    if (filter === 'ongoing') {
-      filtered = courses.filter(c => c.progressPercentage < 100);
-    } else if (filter === 'completed') {
-      filtered = courses.filter(c => c.progressPercentage === 100);
-    }
-
-    setFilteredCourses(filtered);
+  const stats = {
+    total: courses.length,
+    ongoing: courses.filter(c => c.progressPercentage < 100).length,
+    completed: courses.filter(c => c.progressPercentage === 100).length,
+    avgProgress: courses.length ? Math.round(courses.reduce((a, c) => a + (c.progressPercentage || 0), 0) / courses.length) : 0,
   };
 
-  const handleContinue = (courseId) => {
-    navigate(`/lms/course/${courseId}/learn`);
-  };
-
-  const handleViewCertificate = (courseId) => {
-    // TODO: Implement certificate view
-    alert('Certificate view coming soon!');
+  const getCourseIcon = (category) => {
+    const icons = { Robotics: '🤖', AI: '🧠', IoT: '📡', Electronics: '⚡', Coding: '💻', Python: '🐍' };
+    return icons[category] || '📚';
   };
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow border-t-blue mx-auto mb-4"></div>
-            <p className="text-dark font-semibold">Loading your courses...</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-robitro-yellow border-t-robitro-blue mx-auto mb-6"></div>
+          <p className="text-robitro-navy font-semibold text-lg">Loading your courses...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout title="My Courses" subtitle="View and manage your enrolled courses">
-      {/* Filter Tabs */}
-      <div className="mb-8 flex gap-4 flex-wrap">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-            filter === 'all'
-              ? 'btn-primary'
-              : 'bg-gray-100 text-dark hover:bg-gray-200'
-          }`}
-        >
-          All Courses ({courses.length})
-        </button>
-        <button
-          onClick={() => setFilter('ongoing')}
-          className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-            filter === 'ongoing'
-              ? 'btn-secondary'
-              : 'bg-gray-100 text-dark hover:bg-gray-200'
-          }`}
-        >
-          In Progress ({courses.filter(c => c.progressPercentage < 100).length})
-        </button>
-        <button
-          onClick={() => setFilter('completed')}
-          className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-            filter === 'completed'
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-100 text-dark hover:bg-gray-200'
-          }`}
-        >
-          Completed ({courses.filter(c => c.progressPercentage === 100).length})
-        </button>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red/10 border-l-4 border-red text-red p-4 rounded-lg mb-8">
-          <p className="font-semibold">{error}</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Header */}
+      <section className="relative overflow-hidden py-12 lg:py-16">
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 40%, #7c3aed 70%, #06b6d4 100%)' }}></div>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-yellow-400/20 rounded-full blur-3xl"></div>
         </div>
-      )}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <p className="text-white/80 text-sm font-semibold mb-2">Welcome back, {user?.firstName || 'Student'} 👋</p>
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-2">My Learning Journey</h1>
+              <p className="text-white/70">Track your progress and continue learning</p>
+            </div>
+            <div className="flex gap-4">
+              <Link to="/courses" className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-all">
+                Browse Courses
+              </Link>
+              <Link to="/lms/dashboard" className="bg-robitro-yellow text-gray-900 px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all">
+                Dashboard
+              </Link>
+            </div>
+          </div>
 
-      {/* Courses List */}
-      {filteredCourses.length === 0 ? (
-        <div className="card text-center py-16">
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-2xl font-bold text-dark mb-2">
-            {courses.length === 0 ? 'No Courses Yet' : 'No Courses in This Category'}
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {courses.length === 0
-              ? 'Start learning by exploring our course catalog'
-              : 'Try selecting a different filter'}
-          </p>
-          {courses.length === 0 && (
-            <button
-              onClick={() => navigate('/courses')}
-              className="btn-primary"
-            >
-              Browse Courses
-            </button>
-          )}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            {[
+              { label: 'Total Courses', value: stats.total, icon: '📚', color: 'bg-white/20' },
+              { label: 'In Progress', value: stats.ongoing, icon: '📖', color: 'bg-white/20' },
+              { label: 'Completed', value: stats.completed, icon: '✅', color: 'bg-white/20' },
+              { label: 'Avg Progress', value: `${stats.avgProgress}%`, icon: '📊', color: 'bg-white/20' },
+            ].map((stat, i) => (
+              <div key={i} className={`${stat.color} backdrop-blur-sm rounded-2xl p-4 text-center`}>
+                <span className="text-2xl block mb-1">{stat.icon}</span>
+                <p className="text-2xl font-black text-white">{stat.value}</p>
+                <p className="text-white/70 text-xs font-semibold">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredCourses.map((course) => (
-            <div
-              key={course._id}
-              className="card hover:shadow-lg transition-all"
-            >
-              <div className="grid md:grid-cols-12 gap-6 items-center">
+      </section>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search & Filter Bar */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-8 flex flex-col sm:flex-row gap-4 items-center">
+          {/* Search */}
+          <div className="relative flex-1 w-full">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Search your courses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue/30 text-gray-900"
+            />
+          </div>
+          {/* Filter Pills */}
+          <div className="flex gap-2 flex-shrink-0">
+            {[
+              { key: 'all', label: 'All', count: stats.total },
+              { key: 'ongoing', label: 'In Progress', count: stats.ongoing },
+              { key: 'completed', label: 'Completed', count: stats.completed },
+            ].map(f => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${filter === f.key
+                  ? 'bg-robitro-blue text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+              >
+                {f.label} ({f.count})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-8">
+            <p className="font-semibold">{error}</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 text-center py-20">
+            <div className="text-7xl mb-6">
+              {courses.length === 0 ? '🎯' : '🔍'}
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              {courses.length === 0 ? 'Start Your Learning Journey' : 'No Matching Courses'}
+            </h3>
+            <p className="text-gray-500 mb-8 max-w-md mx-auto">
+              {courses.length === 0
+                ? 'Explore our exciting courses in Robotics, AI, and more. Enroll today and start building the future!'
+                : 'Try adjusting your search or filter criteria'}
+            </p>
+            {courses.length === 0 && (
+              <Link to="/courses" className="inline-block bg-gradient-to-r from-robitro-blue to-robitro-teal text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-lg transition-all">
+                🚀 Explore Courses
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((course) => (
+              <div key={course.id || course._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                 {/* Course Thumbnail */}
-                <div className="md:col-span-2">
-                  <div className="bg-gradient-to-r from-blue to-yellow h-24 rounded-lg flex items-center justify-center">
-                    <div className="text-4xl">
-                      {course.category === 'Robotics' && '🤖'}
-                      {course.category === 'AI' && '🧠'}
-                      {course.category === 'IoT' && '📡'}
-                      {course.category === 'Electronics' && '⚡'}
-                      {course.category === 'Coding' && '💻'}
-                      {!['Robotics', 'AI', 'IoT', 'Electronics', 'Coding'].includes(course.category) && '📚'}
-                    </div>
+                <div className="relative h-40 bg-gradient-to-br from-robitro-blue via-purple-600 to-robitro-teal flex items-center justify-center overflow-hidden">
+                  {course.thumbnail ? (
+                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  ) : (
+                    <span className="text-6xl opacity-80 group-hover:scale-125 transition-transform duration-500">{getCourseIcon(course.category)}</span>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  {/* Progress Badge */}
+                  <div className="absolute top-3 right-3">
+                    {course.progressPercentage === 100 ? (
+                      <span className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">✅ Completed</span>
+                    ) : course.progressPercentage >= 50 ? (
+                      <span className="bg-robitro-yellow text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">📖 In Progress</span>
+                    ) : (
+                      <span className="bg-white/90 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">🎯 Started</span>
+                    )}
+                  </div>
+                  {/* Category Badge */}
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+                      {course.category || 'General'}
+                    </span>
                   </div>
                 </div>
 
                 {/* Course Info */}
-                <div className="md:col-span-5">
-                  <h3 className="text-lg font-bold text-dark mb-1">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {course.description?.substring(0, 100)}...
-                  </p>
-                  <div className="flex gap-4 text-sm text-gray-500">
-                    <span>📊 Level: {course.level || 'Beginner'}</span>
-                    <span>👥 Age: {course.ageGroup || 'All'}</span>
-                    <span>📖 {course.completedLessons?.length || 0} lessons</span>
-                  </div>
-                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-robitro-blue transition-colors">{course.title}</h3>
+                  <p className="text-sm text-gray-500 mb-4 line-clamp-2">{course.description?.substring(0, 120)}</p>
 
-                {/* Progress */}
-                <div className="md:col-span-3">
-                  <div className="mb-2">
-                    <div className="flex justify-between mb-1">
-                      <p className="text-sm font-semibold text-dark">Progress</p>
-                      <p className="text-sm font-bold text-blue">
-                        {course.progressPercentage || 0}%
-                      </p>
+                  {/* Meta Info */}
+                  <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
+                    <span className="flex items-center gap-1">📊 {course.level || 'Beginner'}</span>
+                    <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                    <span className="flex items-center gap-1">👥 {course.ageGroup || 'All Ages'}</span>
+                    {course.completedLessons && (
+                      <>
+                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <span className="flex items-center gap-1">📝 {course.completedLessons.length} lessons done</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span className="font-semibold text-gray-600">Progress</span>
+                      <span className="font-bold text-robitro-blue">{course.progressPercentage || 0}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-blue to-yellow h-3 rounded-full transition-all duration-300"
-                        style={{ width: `${course.progressPercentage || 0}%` }}
+                        className="h-2.5 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${course.progressPercentage || 0}%`,
+                          background: course.progressPercentage === 100
+                            ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                            : 'linear-gradient(90deg, #2563eb, #7c3aed)'
+                        }}
                       ></div>
                     </div>
                   </div>
 
-                  {/* Status */}
-                  {course.progressPercentage === 100 ? (
-                    <span className="inline-block bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      ✓ Completed
-                    </span>
-                  ) : course.progressPercentage >= 50 ? (
-                    <span className="inline-block bg-yellow text-dark text-xs font-bold px-3 py-1 rounded-full">
-                      📖 In Progress
-                    </span>
-                  ) : (
-                    <span className="inline-block bg-gray-300 text-dark text-xs font-bold px-3 py-1 rounded-full">
-                      🎯 Just Started
-                    </span>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="md:col-span-2 flex gap-2">
-                  {course.progressPercentage < 100 ? (
-                    <button
-                      onClick={() => handleContinue(course._id)}
-                      className="btn-primary w-full text-sm"
-                    >
-                      Continue
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleViewCertificate(course._id)}
-                      className="btn-secondary w-full text-sm"
-                    >
-                      Certificate 🏆
-                    </button>
-                  )}
+                  {/* Action Button */}
+                  <button
+                    onClick={() => navigate(`/lms/course/${course.id || course._id}/learn`)}
+                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${course.progressPercentage === 100
+                      ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                      : 'bg-gradient-to-r from-robitro-blue to-robitro-teal text-white hover:shadow-lg hover:shadow-blue-200'
+                      }`}
+                  >
+                    {course.progressPercentage === 100 ? '🏆 View Certificate' : course.progressPercentage > 0 ? '▶️ Continue Learning' : '🚀 Start Course'}
+                  </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </Layout>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
-

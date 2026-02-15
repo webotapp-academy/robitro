@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import api from '../services/api';
 
 // Counter animation hook
 function useCountUp(end, duration = 2000, startOnView = true) {
@@ -240,6 +241,29 @@ function DraggableMarquee({ children }) {
 
 export default function Home() {
   const [openFAQ, setOpenFAQ] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  // Fetch featured products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log('🔄 Fetching featured products...');
+        const response = await api.get('/products?limit=4');
+        console.log('✅ Products API Response:', response.data);
+        console.log('📦 Products array:', response.data.products || response.data.data || []);
+        console.log('📊 Products count:', (response.data.products || response.data.data || []).length);
+        setProducts(response.data.products || response.data.data || []);
+      } catch (err) {
+        console.error('❌ Failed to load products:', err);
+        console.error('Error details:', err.response?.data || err.message);
+      } finally {
+        setLoadingProducts(false);
+        console.log('✅ Products loading complete. Loading state:', false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // Scroll reveal effect
   useEffect(() => {
@@ -529,107 +553,78 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                id: 1,
-                name: 'MEX DIY Robotics Kit 2.0',
-                description: 'Build hundreds of robots with 300+ parts',
-                price: 125,
-                originalPrice: 130,
-                rating: 4.8,
-                image: 'https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=400&h=400&fit=crop',
-                badge: 'Best Seller',
-                badgeColor: 'bg-robitro-yellow'
-              },
-              {
-                id: 2,
-                name: 'Arduino Ultimate Pack',
-                description: 'Master Arduino with 40+ components',
-                price: 40,
-                originalPrice: 60,
-                rating: 4.7,
-                image: 'https://images.unsplash.com/photo-1553406830-ef2513450d76?w=400&h=400&fit=crop',
-                badge: 'Popular',
-                badgeColor: 'bg-robitro-blue'
-              },
-              {
-                id: 7,
-                name: 'Coding Robot Buddy',
-                description: 'Programmable robot for young coders',
-                price: 35,
-                originalPrice: 50,
-                rating: 4.9,
-                image: 'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=400&h=400&fit=crop',
-                badge: 'Kids Favorite',
-                badgeColor: 'bg-robitro-teal'
-              },
-              {
-                id: 4,
-                name: 'Drone Building Kit',
-                description: 'Build your own quadcopter drone',
-                price: 90,
-                originalPrice: 130,
-                rating: 4.9,
-                image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=400&h=400&fit=crop',
-                badge: 'Premium',
-                badgeColor: 'bg-gradient-to-r from-purple-500 to-pink-500'
-              }
-            ].map((product, idx) => (
-              <Link
-                key={product.id}
-                to={`/shop`}
-                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 scroll-reveal border border-gray-100"
-                style={{ transitionDelay: `${idx * 100}ms` }}
-              >
-                {/* Product Image */}
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-                  {/* Badge */}
-                  {product.badge && (
-                    <span className={`absolute top-4 left-4 ${product.badgeColor} text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg`}>
-                      {product.badge}
-                    </span>
-                  )}
-
-                  {/* Rating */}
-                  <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    <span className="text-robitro-yellow text-sm">★</span>
-                    <span className="text-sm font-bold text-robitro-navy">{product.rating}</span>
+            {loadingProducts ? (
+              // Loading skeleton
+              [1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 animate-pulse">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-6 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/2"></div>
                   </div>
                 </div>
+              ))
+            ) : products.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No featured products available</p>
+              </div>
+            ) : (
+              products.map((product, idx) => (
+                <Link
+                  key={product.id}
+                  to={`/shop/product/${product.id}`}
+                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100"
+                  style={{ transitionDelay: `${idx * 100}ms` }}
+                >
+                  {/* Product Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={product.images?.[0]?.startsWith('http') ? product.images[0] : `http://localhost:5001${product.images?.[0] || '/uploads/placeholder.jpg'}`}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-lg font-bold text-robitro-navy mb-2 group-hover:text-robitro-blue transition-colors line-clamp-1">
-                    {product.name}
-                  </h3>
-                  <p className="text-robitro-gray text-sm mb-4 line-clamp-2">
-                    {product.description}
-                  </p>
+                    {/* Badge */}
+                    {product.featured && (
+                      <span className="absolute top-4 left-4 bg-robitro-yellow text-robitro-navy text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                        Featured
+                      </span>
+                    )}
 
-                  {/* Price */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-2xl font-black text-robitro-navy">£{product.price.toLocaleString()}</span>
-                      {product.originalPrice > product.price && (
-                        <span className="ml-2 text-sm text-gray-400 line-through">£{product.originalPrice.toLocaleString()}</span>
-                      )}
-                    </div>
-                    <div className="w-10 h-10 bg-robitro-yellow rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <svg className="w-5 h-5 text-robitro-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                    {/* Stock Badge */}
+                    {product.stock <= 5 && product.stock > 0 && (
+                      <span className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                        Only {product.stock} left!
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-robitro-navy mb-2 group-hover:text-robitro-blue transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
+                    <p className="text-robitro-gray text-sm mb-4 line-clamp-2">
+                      {product.description}
+                    </p>
+
+                    {/* Price */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-2xl font-black text-robitro-navy">£{product.price.toLocaleString()}</span>
+                      </div>
+                      <div className="w-10 h-10 bg-robitro-yellow rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg className="w-5 h-5 text-robitro-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-12 scroll-reveal">

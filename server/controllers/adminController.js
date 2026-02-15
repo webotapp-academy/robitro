@@ -150,10 +150,44 @@ export const getEnrollments = async (req, res) => {
     try {
         const { page = 1, limit = 20 } = req.query;
         const [enrollments, total] = await Promise.all([
-            prisma.enrollment.findMany({ take: +limit, skip: (+page - 1) * +limit, orderBy: { enrolledAt: 'desc' }, include: { user: { select: { firstName: true, lastName: true, email: true } }, course: { select: { title: true } } } }),
+            prisma.enrollment.findMany({
+                take: +limit,
+                skip: (+page - 1) * +limit,
+                orderBy: { enrolledAt: 'desc' },
+                include: {
+                    user: { select: { firstName: true, lastName: true, email: true } },
+                    course: { select: { title: true, price: true } }
+                }
+            }),
             prisma.enrollment.count(),
         ]);
-        res.json({ success: true, data: enrollments, pagination: { total, page: +page, pages: Math.ceil(total / +limit) } });
+        // Flatten for CrudPage table display
+        const data = enrollments.map(e => ({
+            ...e,
+            studentName: e.customerName || `${e.user?.firstName || ''} ${e.user?.lastName || ''}`.trim(),
+            studentEmail: e.customerEmail || e.user?.email || '',
+            courseTitle: e.course?.title || '',
+            coursePrice: e.course?.price || 0,
+        }));
+        res.json({ success: true, data, pagination: { total, page: +page, pages: Math.ceil(total / +limit) } });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const updateEnrollment = async (req, res) => {
+    try {
+        const { paymentStatus, status } = req.body;
+        const updateData = {};
+        if (paymentStatus) updateData.paymentStatus = paymentStatus;
+        if (status) updateData.status = status;
+        const enrollment = await prisma.enrollment.update({
+            where: { id: req.params.id },
+            data: updateData,
+            include: {
+                user: { select: { firstName: true, lastName: true, email: true } },
+                course: { select: { title: true, price: true } }
+            }
+        });
+        res.json({ success: true, data: enrollment });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 

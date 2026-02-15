@@ -3,7 +3,7 @@ import prisma from '../config/db.js';
 // ==================== ENROLL IN COURSE ====================
 export const enrollCourse = async (req, res) => {
   try {
-    const { courseId } = req.body;
+    const { courseId, transactionNumber, customerName, customerEmail, customerPhone } = req.body;
 
     if (!courseId) {
       return res.status(400).json({
@@ -41,13 +41,26 @@ export const enrollCourse = async (req, res) => {
       });
     }
 
-    // Create enrollment
+    // Handle payment proof file
+    let paymentProofPath = null;
+    if (req.file) {
+      paymentProofPath = `/uploads/enrollment-proofs/${req.file.filename}`;
+    }
+
+    // Create enrollment with payment info
     const enrollment = await prisma.enrollment.create({
       data: {
         userId: req.user.id,
         courseId,
         status: 'ongoing',
         enrolledAt: new Date(),
+        paymentStatus: 'pending',
+        paymentAmount: course.price || 0,
+        paymentProof: paymentProofPath,
+        transactionNumber: transactionNumber || null,
+        customerName: customerName || `${req.user.firstName} ${req.user.lastName}`,
+        customerEmail: customerEmail || req.user.email,
+        customerPhone: customerPhone || null,
       },
     });
 
@@ -63,7 +76,7 @@ export const enrollCourse = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Enrolled in course successfully',
+      message: 'Enrolled in course successfully! Payment is being verified.',
       enrollment,
     });
   } catch (error) {

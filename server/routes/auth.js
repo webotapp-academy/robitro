@@ -4,6 +4,7 @@ import {
   partnerSignup,
   login,
   getProfile,
+  updateProfile,
   logout,
   verifyEmail,
   changePassword,
@@ -19,6 +20,7 @@ router.post('/login', login);
 
 // Protected routes
 router.get('/profile', protect, getProfile);
+router.put('/profile', protect, updateProfile);
 router.post('/logout', protect, logout);
 router.post('/verify-email', protect, verifyEmail);
 router.post('/change-password', protect, changePassword);

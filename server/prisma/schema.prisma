@@ -156,6 +156,13 @@ model Enrollment {
   certificateUrl      String?
   progressPercentage  Int               @default(0)
   status              EnrollmentStatus  @default(ongoing)
+  paymentStatus       String            @default("pending")
+  paymentAmount       Float             @default(0)
+  paymentProof        String?
+  transactionNumber   String?
+  customerName        String?
+  customerEmail       String?
+  customerPhone       String?
   updatedAt           DateTime          @updatedAt
   completedLessons    CompletedLesson[]
   course              Course            @relation(fields: [courseId], references: [id])

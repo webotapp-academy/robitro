@@ -1,14 +1,19 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 
 export default function CourseDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
+  const [enrollStep, setEnrollStep] = useState(1);
   const [enrollData, setEnrollData] = useState({ name: '', email: '', phone: '' });
+  const [paymentProof, setPaymentProof] = useState(null);
+  const [transactionNumber, setTransactionNumber] = useState('');
+  const [enrollSubmitting, setEnrollSubmitting] = useState(false);
   const [callbackData, setCallbackData] = useState({ name: '', phone: '', preferredTime: '' });
 
   // Refs for scrolling to sections
@@ -130,32 +135,58 @@ export default function CourseDetail() {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const handleEnrollStep1 = (e) => {
+    e.preventDefault();
+    setEnrollStep(2);
+  };
+
   const handleEnrollSubmit = async (e) => {
     e.preventDefault();
+    if (!paymentProof && !transactionNumber) {
+      Swal.fire({ title: 'Payment Required', text: 'Please upload payment proof or enter a transaction number.', icon: 'warning', confirmButtonColor: '#F59E0B' });
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      Swal.fire({ title: 'Login Required', text: 'Please login to enroll in courses.', icon: 'info', confirmButtonColor: '#2563EB' });
+      navigate('/login');
+      return;
+    }
+
+    setEnrollSubmitting(true);
     try {
-      const response = await api.post('/enquiry/lead', {
-        ...enrollData,
-        courseId: id,
-        type: 'enrollment'
+      const formData = new FormData();
+      formData.append('courseId', id);
+      formData.append('customerName', enrollData.name);
+      formData.append('customerEmail', enrollData.email);
+      formData.append('customerPhone', enrollData.phone);
+      if (paymentProof) formData.append('paymentProof', paymentProof);
+      if (transactionNumber) formData.append('transactionNumber', transactionNumber);
+
+      const response = await api.post('/enrollments/enroll', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
+
       if (response.data.success) {
         Swal.fire({
-          title: 'Enrollment Successful!',
-          text: 'Thank you for enrolling! Our team will contact you shortly with next steps.',
+          title: 'Enrollment Successful! 🎉',
+          text: 'Thank you! Your payment is being verified. You can start exploring the course.',
           icon: 'success',
           confirmButtonColor: '#F59E0B'
         });
         setShowEnrollModal(false);
+        setEnrollStep(1);
         setEnrollData({ name: '', email: '', phone: '' });
+        setPaymentProof(null);
+        setTransactionNumber('');
       }
     } catch (err) {
       console.error('Enrollment error:', err);
-      Swal.fire({
-        title: 'Error!',
-        text: 'Failed to submit enrollment. Please try again or contact support.',
-        icon: 'error',
-        confirmButtonColor: '#EF4444'
-      });
+      const msg = err.response?.data?.message || 'Failed to submit enrollment. Please try again.';
+      Swal.fire({ title: 'Error!', text: msg, icon: 'error', confirmButtonColor: '#EF4444' });
+    } finally {
+      setEnrollSubmitting(false);
     }
   };
 
@@ -217,19 +248,127 @@ export default function CourseDetail() {
 
   return (
     <div className="w-full bg-white">
-      {/* Enroll Modal */}
+      {/* Enroll Modal - 2 Step Payment Flow */}
       {showEnrollModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
-            <button onClick={() => setShowEnrollModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">×</button>
-            <h3 className="text-2xl font-bold text-robitro-navy mb-2">Enroll in {course.title}</h3>
-            <p className="text-gray-600 mb-6">Fill in your details to get started</p>
-            <form onSubmit={handleEnrollSubmit} className="space-y-4">
-              <input type="text" required placeholder="Your Name" value={enrollData.name} onChange={(e) => setEnrollData({ ...enrollData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
-              <input type="email" required placeholder="Email Address" value={enrollData.email} onChange={(e) => setEnrollData({ ...enrollData, email: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
-              <input type="tel" required placeholder="Phone Number" value={enrollData.phone} onChange={(e) => setEnrollData({ ...enrollData, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
-              <button type="submit" className="w-full py-4 bg-robitro-yellow text-gray-900 rounded-xl font-bold text-lg hover:shadow-lg transition-all">🎓 Enroll Now - £{course.price}</button>
-            </form>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onClick={() => { setShowEnrollModal(false); setEnrollStep(1); }} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl z-10">×</button>
+
+            {/* Step Progress */}
+            <div className="bg-gradient-to-r from-robitro-blue to-robitro-teal p-6 rounded-t-2xl">
+              <h3 className="text-xl font-bold text-white mb-4">Enroll in {course.title}</h3>
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${enrollStep >= 1 ? 'bg-white text-robitro-blue' : 'bg-white/30 text-white'}`}>{enrollStep > 1 ? '✓' : '1'}</div>
+                <div className={`flex-1 h-1 rounded ${enrollStep >= 2 ? 'bg-white' : 'bg-white/30'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${enrollStep >= 2 ? 'bg-white text-robitro-blue' : 'bg-white/30 text-white'}`}>2</div>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span className="text-white/80 text-xs">Your Details</span>
+                <span className="text-white/80 text-xs">Payment</span>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Step 1: Student Info */}
+              {enrollStep === 1 && (
+                <form onSubmit={handleEnrollStep1} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+                    <input type="text" required placeholder="Your full name" value={enrollData.name} onChange={(e) => setEnrollData({ ...enrollData, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+                    <input type="email" required placeholder="your@email.com" value={enrollData.email} onChange={(e) => setEnrollData({ ...enrollData, email: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" required placeholder="+44 7XXX XXXXXX" value={enrollData.phone} onChange={(e) => setEnrollData({ ...enrollData, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4 flex justify-between items-center">
+                    <span className="text-gray-600">Course Fee</span>
+                    <span className="text-2xl font-black text-robitro-navy">£{course.price}</span>
+                  </div>
+                  <button type="submit" className="w-full py-4 bg-gradient-to-r from-robitro-blue to-robitro-teal text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all">Continue to Payment →</button>
+                </form>
+              )}
+
+              {/* Step 2: Payment */}
+              {enrollStep === 2 && (
+                <div className="space-y-5">
+                  {/* Bank Details */}
+                  <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                    <h4 className="text-lg font-bold text-robitro-navy mb-4 flex items-center gap-2">🏦 Bank Transfer Details</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Bank Name</p>
+                        <p className="font-bold text-robitro-navy">Barclays Bank UK</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Account Name</p>
+                        <p className="font-bold text-robitro-navy">Robitro Ltd</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Account Number</p>
+                        <p className="font-bold font-mono text-robitro-navy">12345678</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Sort Code</p>
+                        <p className="font-bold font-mono text-robitro-navy">20-00-00</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Amount to Transfer</span>
+                      <span className="text-2xl font-black text-robitro-navy">£{course.price}</span>
+                    </div>
+                  </div>
+
+                  {/* Payment Proof Form */}
+                  <form onSubmit={handleEnrollSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Payment Proof (Screenshot)</label>
+                      <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-robitro-blue transition-colors">
+                        <input type="file" accept="image/*" onChange={(e) => setPaymentProof(e.target.files[0])} className="hidden" id="enrollPaymentProof" />
+                        <label htmlFor="enrollPaymentProof" className="cursor-pointer">
+                          {paymentProof ? (
+                            <div className="flex items-center justify-center gap-2 text-green-600">
+                              <span>✅</span>
+                              <span className="font-semibold">{paymentProof.name}</span>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="text-3xl block mb-2">📤</span>
+                              <span className="text-gray-500 text-sm">Click to upload payment screenshot</span>
+                            </div>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-gray-200"></div>
+                      <span className="text-gray-400 text-xs font-semibold">OR</span>
+                      <div className="flex-1 h-px bg-gray-200"></div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Transaction Reference Number</label>
+                      <input type="text" placeholder="Enter your transaction reference" value={transactionNumber} onChange={(e) => setTransactionNumber(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-robitro-blue text-gray-900" />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button type="button" onClick={() => setEnrollStep(1)} className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-all">← Back</button>
+                      <button type="submit" disabled={enrollSubmitting} className="flex-[2] py-3 bg-robitro-yellow text-gray-900 rounded-xl font-bold text-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                        {enrollSubmitting ? (
+                          <><div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div> Processing...</>
+                        ) : (
+                          <>🎓 Complete Enrollment - £{course.price}</>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

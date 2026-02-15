@@ -328,6 +328,32 @@ export const getProfile = async (req, res) => {
   }
 };
 
+// ==================== UPDATE PROFILE ====================
+export const updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, parentName, parentPhone, schoolName } = req.body;
+    const updateData = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (parentName !== undefined) updateData.parentName = parentName;
+    if (parentPhone !== undefined) updateData.parentPhone = parentPhone;
+    if (schoolName !== undefined) updateData.schoolName = schoolName;
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: updateData,
+      select: {
+        id: true, firstName: true, lastName: true, email: true,
+        role: true, age: true, parentName: true, parentPhone: true,
+        schoolName: true, isVerified: true, createdAt: true,
+      },
+    });
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ==================== LOGOUT ====================
 export const logout = async (req, res) => {
   res.status(200).json({
