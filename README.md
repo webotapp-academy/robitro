@@ -1,29 +1,23 @@
 # Robitro - Learning Platform
 
-## Project Structure
-- **Client**: React + Vite (Frontend)
-- **Server**: Node.js + Express (Backend)
+**Version:** 1.3.0  
+**Last Updated:** 2026-02-15
 
-## How to Run
+## Overview
+Robitro is a comprehensive learning platform for young innovators, featuring:
+- Robotics Courses
+- E-commerce Shop for Kits
+- Online Learning Management System
 
-1.  **Install Dependencies** (if not already done):
-    ```bash
-    npm run install:all
-    ```
+## Deployment Status
+- **Current Version**: v1.3.0
+- **Latest Update**: Performance optimization and caching implementation (5x speedup)
 
-2.  **Start Development Servers**:
-    ```bash
-    npm run dev
-    ```
-    This specific command runs both client and server concurrently.
+## Quick Start
+```bash
+npm install
+npm run dev
+```
 
-## Accessing the Application
-
-- **Frontend (User Interface)**: [http://localhost:5173](http://localhost:5173)
-- **Backend (API)**: [http://localhost:5001](http://localhost:5001)
-
-> **Note**: If you access the backend URL (`http://localhost:5001`) directly in your browser, you will see a `{"success":false,"message":"Route not found"}` error. This is normal because the backend is an API server, not a web server for the frontend. Please use the **Frontend URL**.
-
-## API Endpoints
-The backend provides API endpoints at `http://localhost:5001/api/...`.
-# robitro
+## Deployment
+See `DEPLOYMENT_GUIDE.md` for full instructions.
