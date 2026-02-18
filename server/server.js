@@ -15,6 +15,7 @@ import enquiryRoutes from './routes/enquiry.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,7 +33,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the React app
+
 // We check two common locations for the dist folder
 const possibleDistPaths = [
   path.join(__dirname, 'public'),
@@ -43,7 +44,7 @@ const possibleDistPaths = [
 
 let distPath = possibleDistPaths.find(p => {
   try {
-    return path.join(p, 'index.html');
+    return fs.existsSync(path.join(p, 'index.html'));
   } catch (e) {
     return false;
   }
