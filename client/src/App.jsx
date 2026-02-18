@@ -8,6 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PartnerRegister from './pages/PartnerRegister';
 import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
 import Community from './pages/Community';
@@ -161,7 +162,7 @@ export default function App() {
                       isAuthenticated ? (
                         <Navigate to={user?.role === 'admin' ? '/admin' : '/lms/dashboard'} replace />
                       ) : (
-                        <Register setIsAuthenticated={setIsAuthenticated} setUser={setUser} type="partner" />
+                        <PartnerRegister setIsAuthenticated={setIsAuthenticated} setUser={setUser} />
                       )
                     }
                   />

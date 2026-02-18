@@ -196,6 +196,12 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
                   Login
                 </Link>
                 <Link
+                  to="/partner-signup"
+                  className="flex items-center gap-2 text-robitro-blue border border-robitro-blue px-4 py-2.5 rounded-full hover:bg-blue-50 hover:shadow-md transition-all font-semibold text-sm"
+                >
+                  🤝 Partner
+                </Link>
+                <Link
                   to="/student-signup"
                   className="flex items-center gap-2 bg-robitro-yellow text-gray-900 px-5 py-2.5 rounded-full hover:shadow-lg hover:scale-105 transition-all font-bold"
                 >
@@ -292,6 +298,13 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Login
+                </Link>
+                <Link
+                  to="/partner-signup"
+                  className="flex items-center justify-center gap-2 w-full py-3 border-2 border-robitro-blue rounded-full text-robitro-blue font-semibold hover:bg-blue-50 transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  🤝 Become a Partner
                 </Link>
                 <Link
                   to="/student-signup"

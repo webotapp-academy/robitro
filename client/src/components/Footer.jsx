@@ -17,7 +17,7 @@ export default function Footer() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
           {/* Main Footer Content */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-12">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="mb-6">
@@ -113,6 +113,33 @@ export default function Footer() {
                 <li>
                   <Link to="/community" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
                     <span className="text-sm">→</span> Mentorship
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Partners */}
+            <div>
+              <h4 className="text-lg font-bold mb-6 text-robitro-yellow">🤝 Partners</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link to="/partner-signup" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                    <span className="text-sm">→</span> Become a Partner
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/partner-signup" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                    <span className="text-sm">→</span> School Programme
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/partner-signup" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                    <span className="text-sm">→</span> Franchise Opportunity
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/partner-signup" className="text-white/80 hover:text-robitro-yellow transition-colors flex items-center gap-2">
+                    <span className="text-sm">→</span> Institute Tie-up
                   </Link>
                 </li>
               </ul>
