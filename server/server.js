@@ -50,6 +50,7 @@ let distPath = possibleDistPaths.find(p => {
   }
 }) || possibleDistPaths[0];
 
+console.log(`📁 Serving static files from: ${distPath}`);
 app.use(express.static(distPath));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
