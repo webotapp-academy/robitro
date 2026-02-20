@@ -13,6 +13,7 @@ const sidebarItems = [
     { label: 'Users', icon: Users, path: '/admin/users' },
     { label: 'Partners', icon: BookOpen, path: '/admin/partners' },
     { label: 'Courses', icon: GraduationCap, path: '/admin/courses' },
+    { label: 'Course Categories', icon: Tags, path: '/admin/courses/categories' },
     { label: 'Products', icon: ShoppingBag, path: '/admin/products' },
     { label: 'Product Categories', icon: Tags, path: '/admin/product-categories' },
     { label: 'Orders', icon: ShoppingCart, path: '/admin/orders' },

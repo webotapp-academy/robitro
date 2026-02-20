@@ -670,3 +670,35 @@ export const deleteProductCategory = async (req, res) => {
         res.json({ success: true, message: 'Category deleted' });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
+
+// ========================
+// COURSE CATEGORIES
+// ========================
+export const getCourseCategories = async (req, res) => {
+    try {
+        const data = await prisma.courseCategory.findMany({ orderBy: { name: 'asc' } });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const createCourseCategory = async (req, res) => {
+    try {
+        const { name, slug, description } = req.body;
+        const data = await prisma.courseCategory.create({ data: { name, slug, description } });
+        res.status(201).json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const updateCourseCategory = async (req, res) => {
+    try {
+        const data = await prisma.courseCategory.update({ where: { id: req.params.id }, data: req.body });
+        res.json({ success: true, data });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+export const deleteCourseCategory = async (req, res) => {
+    try {
+        await prisma.courseCategory.delete({ where: { id: req.params.id } });
+        res.json({ success: true, message: 'Category deleted' });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};

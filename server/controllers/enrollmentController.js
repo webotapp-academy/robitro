@@ -110,11 +110,13 @@ export const getMyEnrolledCourses = async (req, res) => {
             level: true,
             thumbnail: true,
             price: true,
+            metadata: true,
             instructor: {
               select: { firstName: true, lastName: true, avatar: true }
             }
           }
-        }
+        },
+        completedLessons: true,
       },
       take: parseInt(limit),
       skip: parseInt(skip),
@@ -124,9 +126,11 @@ export const getMyEnrolledCourses = async (req, res) => {
     const courses = enrollments.map((enrollment) => ({
       enrollmentId: enrollment.id,
       enrolledAt: enrollment.enrolledAt,
+      progressPercentage: enrollment.progressPercentage,
       progress: enrollment.progressPercentage,
       status: enrollment.status,
       certificateIssued: enrollment.certificateIssued,
+      completedLessons: enrollment.completedLessons,
       ...enrollment.course,
     }));
 
@@ -211,15 +215,7 @@ export const completeLessonProgress = async (req, res) => {
       where: { id: enrollmentId },
       include: {
         completedLessons: true,
-        course: {
-          include: {
-            modules: {
-              include: {
-                lessons: true
-              }
-            }
-          }
-        }
+        course: true,
       }
     });
 
@@ -257,20 +253,34 @@ export const completeLessonProgress = async (req, res) => {
         where: { enrollmentId }
       });
 
-      // Calculate progress percentage
-      const totalLessons = enrollment.course.modules.reduce(
-        (acc, module) => acc + module.lessons.length,
+      // Calculate total lessons from metadata curriculum
+      const metadata = enrollment.course.metadata || {};
+      const curriculum = metadata.curriculum || [];
+      let totalLessons = curriculum.reduce(
+        (acc, chapter) => acc + (chapter.lessons ? chapter.lessons.length : 0),
         0
       );
 
-      const progressPercentage = Math.round((completedCount / totalLessons) * 100);
+      // Fallback: if no curriculum in metadata, try Module/Lesson tables
+      if (totalLessons === 0) {
+        const moduleCount = await prisma.lesson.count({
+          where: { module: { courseId: enrollment.courseId } }
+        });
+        totalLessons = moduleCount;
+      }
+
+      // Avoid division by zero
+      const progressPercentage = totalLessons > 0
+        ? Math.round((completedCount / totalLessons) * 100)
+        : 0;
 
       // Check if course completed
       const updateData = {
         progressPercentage
       };
 
-      if (progressPercentage === 100) {
+      if (progressPercentage >= 100) {
+        updateData.progressPercentage = 100;
         updateData.status = 'completed';
         updateData.certificateIssued = true;
         updateData.certificateIssuedAt = new Date();

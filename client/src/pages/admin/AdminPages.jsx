@@ -45,44 +45,20 @@ export function AdminPartners() {
 }
 
 export function AdminCourses() {
+    const navigate = useNavigate();
     return <CrudPage
         title="Courses"
         endpoint="/courses"
         searchable={true}
+        onAdd={() => navigate('/admin/courses/add')}
+        onEdit={(item) => navigate(`/admin/courses/edit/${item.id}`)}
         fields={[
-            { key: 'title', label: 'Title', showInTable: true, editable: true, placeholder: 'Course Title' },
-            { key: 'description', label: 'Description', type: 'textarea', showInTable: false, editable: true, placeholder: 'Course description...' },
-            {
-                key: 'category', label: 'Category', showInTable: true, editable: true, type: 'select', options: [
-                    { value: 'Robotics', label: 'Robotics' },
-                    { value: 'Programming', label: 'Programming' },
-                    { value: 'Electronics', label: 'Electronics' },
-                    { value: 'AI & ML', label: 'AI & ML' },
-                    { value: 'IoT', label: 'IoT' },
-                ]
-            },
-            { key: 'ageGroup', label: 'Age Group', showInTable: true, editable: true, placeholder: '8-12 years' },
-            {
-                key: 'level', label: 'Level', showInTable: true, editable: true, type: 'select', options: [
-                    { value: 'beginner', label: 'Beginner' },
-                    { value: 'intermediate', label: 'Intermediate' },
-                    { value: 'advanced', label: 'Advanced' },
-                ]
-            },
-            { key: 'price', label: 'Price (£)', type: 'number', showInTable: true, editable: true, default: 0 },
-            { key: 'thumbnail', label: 'Thumbnail URL', showInTable: false, editable: true, placeholder: 'https://...' },
-            { key: 'isLive', label: 'Is Live', type: 'switch', showInTable: true, editable: true, default: false },
-            { key: 'startDate', label: 'Start Date', type: 'date', showInTable: false, editable: true },
-            { key: 'endDate', label: 'End Date', type: 'date', showInTable: false, editable: true },
-            {
-                key: 'status', label: 'Status', showInTable: true, editable: true, type: 'select', options: [
-                    { value: 'draft', label: 'Draft' },
-                    { value: 'published', label: 'Published' },
-                    { value: 'archived', label: 'Archived' },
-                ], default: 'draft'
-            },
-            { key: 'enrollmentCount', label: 'Enrollments', showInTable: true, editable: false },
-            { key: 'rating', label: 'Rating', showInTable: true, editable: false },
+            { key: 'title', label: 'Title', showInTable: true },
+            { key: 'category', label: 'Category', showInTable: true },
+            { key: 'level', label: 'Level', showInTable: true },
+            { key: 'price', label: 'Price (£)', type: 'number', showInTable: true },
+            { key: 'status', label: 'Status', showInTable: true },
+            { key: 'enrollmentCount', label: 'Enrollments', showInTable: true },
         ]}
     />;
 }
@@ -535,6 +511,14 @@ export function CmsSettings() {
 
 export function AdminProductCategories() {
     return <CrudPage title="Product Categories" endpoint="/product-categories" fields={[
+        { key: 'name', label: 'Category Name', showInTable: true, editable: true },
+        { key: 'slug', label: 'Slug', showInTable: true, editable: true },
+        { key: 'description', label: 'Description', type: 'textarea', showInTable: true, editable: true },
+    ]} />;
+}
+
+export function AdminCourseCategories() {
+    return <CrudPage title="Course Categories" endpoint="/course-categories" fields={[
         { key: 'name', label: 'Category Name', showInTable: true, editable: true },
         { key: 'slug', label: 'Slug', showInTable: true, editable: true },
         { key: 'description', label: 'Description', type: 'textarea', showInTable: true, editable: true },

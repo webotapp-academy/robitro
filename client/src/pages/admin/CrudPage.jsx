@@ -23,6 +23,9 @@ export default function CrudPage({ title, endpoint, fields, searchable = true, c
     const [pagination, setPagination] = useState(null);
     const [error, setError] = useState('');
 
+    const [deleteId, setDeleteId] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
     const fetchItems = useCallback(async () => {
         setLoading(true);
         try {
@@ -57,12 +60,15 @@ export default function CrudPage({ title, endpoint, fields, searchable = true, c
         setShowForm(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this item?')) return;
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        setDeleting(true);
         try {
-            await apiFetch(`${endpoint}/${id}`, { method: 'DELETE' });
+            await apiFetch(`${endpoint}/${deleteId}`, { method: 'DELETE' });
+            setDeleteId(null);
             fetchItems();
         } catch (err) { setError(err.message); }
+        setDeleting(false);
     };
 
     const handleSubmit = async (e) => {
@@ -184,8 +190,8 @@ export default function CrudPage({ title, endpoint, fields, searchable = true, c
                                     <td className="px-5 py-3.5 text-right">
                                         <div className="flex justify-end gap-2">
                                             {customActions && customActions(item)}
-                                            <button onClick={() => handleEdit(item)} className="p-2 text-robitro-blue hover:bg-robitro-blue/10 rounded-lg transition-colors"><Edit2 size={15} /></button>
-                                            <button onClick={() => handleDelete(item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={15} /></button>
+                                            <button type="button" onClick={() => handleEdit(item)} className="p-2 text-robitro-blue hover:bg-robitro-blue/10 rounded-lg transition-colors"><Edit2 size={15} /></button>
+                                            <button type="button" onClick={() => setDeleteId(item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={15} /></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -230,6 +236,36 @@ export default function CrudPage({ title, endpoint, fields, searchable = true, c
                                 <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 bg-gray-100 text-robitro-gray font-bold rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteId && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDeleteId(null)} />
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+                        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Trash2 size={32} />
+                        </div>
+                        <h3 className="text-xl font-bold text-robitro-navy mb-2">Are you sure?</h3>
+                        <p className="text-gray-500 mb-6">This action cannot be undone. This item will be permanently removed.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleDelete}
+                                disabled={deleting}
+                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {deleting ? <Loader2 size={16} className="animate-spin" /> : null}
+                                Yes, Delete
+                            </button>
+                            <button
+                                onClick={() => setDeleteId(null)}
+                                className="flex-1 py-3 bg-gray-100 text-robitro-gray font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

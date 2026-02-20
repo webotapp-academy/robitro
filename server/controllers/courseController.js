@@ -21,7 +21,7 @@ export const getAllCourses = async (req, res) => {
     // Only filter published courses if not from admin panel
     if (status) {
       where.status = status;
-    } else if (!req.path.includes('/admin/')) {
+    } else if (!req.originalUrl.includes('/admin/')) {
       where.status = 'published';
     }
 
@@ -124,6 +124,7 @@ export const createCourse = async (req, res) => {
       title,
       description,
       category,
+      categoryId,
       level,
       ageGroup,
       price,
@@ -132,6 +133,8 @@ export const createCourse = async (req, res) => {
       startDate,
       endDate,
       modules,
+      metadata,
+      status,
     } = req.body;
 
     // Validation
@@ -157,6 +160,7 @@ export const createCourse = async (req, res) => {
         title,
         description,
         category,
+        categoryId,
         level: level || 'beginner',
         ageGroup,
         price: price ? parseFloat(price) : 0,
@@ -165,7 +169,8 @@ export const createCourse = async (req, res) => {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         instructorId: req.user.id,
-        status: 'draft',
+        status: status || 'draft',
+        metadata: metadata || {},
         modules: {
           create: modules?.map((mod) => ({
             title: mod.title,
@@ -191,6 +196,9 @@ export const createCourse = async (req, res) => {
       }
     });
 
+    // Invalidate course cache
+    cache.deletePattern('courses');
+
     res.status(201).json({
       success: true,
       message: 'Course created successfully',
@@ -207,7 +215,7 @@ export const createCourse = async (req, res) => {
 // ==================== UPDATE COURSE ====================
 export const updateCourse = async (req, res) => {
   try {
-    const { title, description, category, level, ageGroup, price, status, modules } = req.body;
+    const { title, description, category, categoryId, level, ageGroup, price, status, modules, metadata, thumbnail, isLive, startDate, endDate } = req.body;
 
     // Find course
     const course = await prisma.course.findUnique({
@@ -234,10 +242,16 @@ export const updateCourse = async (req, res) => {
     if (title) updateData.title = title;
     if (description) updateData.description = description;
     if (category) updateData.category = category;
+    if (categoryId) updateData.categoryId = categoryId;
     if (level) updateData.level = level;
     if (ageGroup) updateData.ageGroup = ageGroup;
     if (price !== undefined) updateData.price = parseFloat(price);
     if (status) updateData.status = status;
+    if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
+    if (isLive !== undefined) updateData.isLive = isLive;
+    if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
+    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+    if (metadata !== undefined) updateData.metadata = metadata;
 
     // Handle modules update (complex)
     // For simplicity, we'll delete existing and recreate if modules are provided
@@ -271,6 +285,9 @@ export const updateCourse = async (req, res) => {
         }
       }
     });
+
+    // Invalidate course cache
+    cache.deletePattern('courses');
 
     res.status(200).json({
       success: true,
@@ -310,6 +327,9 @@ export const deleteCourse = async (req, res) => {
     await prisma.course.delete({
       where: { id: req.params.id },
     });
+
+    // Invalidate course cache
+    cache.deletePattern('courses');
 
     res.status(200).json({
       success: true,

@@ -107,6 +107,8 @@ model Course {
   startDate       DateTime?
   endDate         DateTime?
   category        String
+  categoryId      String?
+  courseCategory  CourseCategory?   @relation(fields: [categoryId], references: [id])
   rating          Float             @default(0)
   enrollmentCount Int               @default(0)
   status          CourseStatus      @default(draft)
@@ -124,6 +126,17 @@ model Course {
 
   @@index([category])
   @@index([status])
+  @@index([categoryId])
+}
+
+model CourseCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  courses     Course[]
 }
 
 model Module {

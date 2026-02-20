@@ -25,6 +25,14 @@ class SimpleCache {
         this.cache.clear();
     }
 
+    deletePattern(pattern) {
+        for (const key of this.cache.keys()) {
+            if (key.includes(pattern)) {
+                this.cache.delete(key);
+            }
+        }
+    }
+
     // Clean up expired entries periodically
     startCleanup(intervalSeconds = 300) {
         setInterval(() => {

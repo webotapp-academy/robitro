@@ -395,7 +395,9 @@ export default function ProductDetail() {
             features: dbProduct.metadata?.features || [],
             skills: dbProduct.metadata?.skills || [],
             projects: dbProduct.metadata?.projects || [],
-            reviews_list: dbProduct.metadata?.reviews_list || []
+            reviews_list: dbProduct.metadata?.reviews_list || [],
+            whyBuyFromUs: dbProduct.metadata?.whyBuyFromUs || [],
+            curriculum: dbProduct.metadata?.curriculum || [],
           };
           setProduct(mappedProduct);
           setCurrentImage(0);
@@ -749,12 +751,12 @@ export default function ProductDetail() {
             <h2 className="section-title">Why Buy From Us</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
+            {(product.whyBuyFromUs && product.whyBuyFromUs.length > 0 ? product.whyBuyFromUs : [
               { icon: '💳', title: 'Card & PayPal', description: 'Easy payment' },
               { icon: '🛡️', title: '6 Month Warranty', description: 'All electronics' },
               { icon: '👨‍🏫', title: 'Expert Support', description: 'Mentors available' },
               { icon: '🚚', title: 'Free Shipping', description: 'All UK orders' }
-            ].map((item, idx) => (
+            ]).map((item, idx) => (
               <div key={idx} className="text-center p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all">
                 <div className="text-2xl mb-2">{item.icon}</div>
                 <h3 className="text-sm font-semibold text-robitro-navy mb-1">{item.title}</h3>
@@ -764,6 +766,67 @@ export default function ProductDetail() {
           </div>
         </div>
       </section>
+
+      {/* ==================== COURSE CURRICULUM ==================== */}
+      {product.curriculum && product.curriculum.length > 0 && (
+        <section className="w-full bg-gradient-to-br from-gray-50 to-white py-16 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <span className="inline-block px-4 py-2 bg-violet-100 text-violet-700 text-sm font-bold rounded-full mb-4">CURRICULUM</span>
+              <h2 className="section-title">Course Curriculum</h2>
+              <p className="section-subtitle">Everything you'll learn with this kit, organized by chapters</p>
+            </div>
+            <div className="max-w-3xl mx-auto space-y-4">
+              {product.curriculum.map((chapter, chIdx) => (
+                <details key={chIdx} className="group bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                  <summary className="flex items-center gap-4 p-5 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+                    <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-violet-600 text-white rounded-xl text-sm font-bold">{chIdx + 1}</span>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-robitro-navy">{chapter.title}</h3>
+                      <p className="text-xs text-gray-400">{(chapter.lessons || []).length} lesson{(chapter.lessons || []).length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </summary>
+                  <div className="border-t border-gray-100">
+                    {(chapter.lessons || []).map((lesson, lIdx) => (
+                      <div key={lIdx} className="p-4 border-b border-gray-50 last:border-b-0 hover:bg-gray-50/50 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm ${lesson.type === 'video' ? 'bg-red-100 text-red-600' :
+                              lesson.type === 'pdf' ? 'bg-blue-100 text-blue-600' :
+                                lesson.type === 'image' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                            {lesson.type === 'video' ? '🎬' : lesson.type === 'pdf' ? '📄' : lesson.type === 'image' ? '🖼️' : '📝'}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-gray-800 mb-1">{lesson.title}</h4>
+                            {lesson.type === 'video' && lesson.content && (() => {
+                              const videoId = lesson.content.match(/(?:youtu\.be\/|v=)([\w-]+)/);
+                              return videoId ? (
+                                <div className="aspect-video rounded-lg overflow-hidden mt-2">
+                                  <iframe src={`https://www.youtube.com/embed/${videoId[1]}`} className="w-full h-full" allowFullScreen title={lesson.title} />
+                                </div>
+                              ) : <a href={lesson.content} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">{lesson.content}</a>;
+                            })()}
+                            {lesson.type === 'pdf' && lesson.content && (
+                              <a href={lesson.content} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors">📄 View PDF</a>
+                            )}
+                            {lesson.type === 'image' && lesson.content && (
+                              <img src={lesson.content} alt={lesson.title} className="mt-2 rounded-lg max-h-64 object-cover" />
+                            )}
+                            {lesson.type === 'writeup' && lesson.content && (
+                              <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap mt-1">{lesson.content}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ==================== REVIEWS SECTION (HOME STYLE) ==================== */}
       <section className="w-full bg-gradient-to-br from-white to-gray-50 py-16 relative overflow-hidden">

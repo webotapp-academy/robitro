@@ -71,7 +71,11 @@ import {
     createProductCategory,
     updateProductCategory,
     deleteProductCategory,
-    updateSiteSetting
+    updateSiteSetting,
+    getCourseCategories,
+    createCourseCategory,
+    updateCourseCategory,
+    deleteCourseCategory
 } from '../controllers/adminController.js';
 import { getAllCourses, createCourse, updateCourse, deleteCourse } from '../controllers/courseController.js';
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.js';
@@ -212,5 +216,11 @@ router.post('/upload', upload.single('image'), (req, res) => {
     const url = `/uploads/${req.file.filename}`;
     res.json({ success: true, url });
 });
+
+// Course Categories
+router.get('/course-categories', getCourseCategories);
+router.post('/course-categories', createCourseCategory);
+router.put('/course-categories/:id', updateCourseCategory);
+router.delete('/course-categories/:id', deleteCourseCategory);
 
 export default router;

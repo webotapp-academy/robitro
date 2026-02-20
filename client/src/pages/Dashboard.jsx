@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { enrollmentService } from '../services/authService';
 import Layout from '../components/Layout';
+import CertificateModal from '../components/CertificateModal';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCertCourse, setSelectedCertCourse] = useState(null);
   const [stats, setStats] = useState({
     totalCourses: 0,
     completedCourses: 0,
@@ -144,7 +146,7 @@ export default function Dashboard() {
                   <button
                     onClick={() => {
                       const inProgress = enrolledCourses.find(c => c.progressPercentage < 100);
-                      if (inProgress) handleContinueLearning(inProgress._id);
+                      if (inProgress) handleContinueLearning(inProgress.id);
                     }}
                     className="btn-primary shadow-xl hover:shadow-2xl text-lg"
                   >
@@ -258,7 +260,7 @@ export default function Dashboard() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {enrolledCourses.map((course, idx) => (
                 <div
-                  key={course._id}
+                  key={course.id}
                   className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 scroll-reveal border border-gray-100"
                   style={{ transitionDelay: `${idx * 100}ms` }}
                 >
@@ -314,8 +316,8 @@ export default function Dashboard() {
                       <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                         <div
                           className={`h-3 rounded-full transition-all duration-700 ${course.progressPercentage === 100
-                              ? 'bg-gradient-to-r from-green-400 to-green-500'
-                              : 'bg-gradient-to-r from-robitro-blue to-robitro-teal'
+                            ? 'bg-gradient-to-r from-green-400 to-green-500'
+                            : 'bg-gradient-to-r from-robitro-blue to-robitro-teal'
                             }`}
                           style={{ width: `${course.progressPercentage || 0}%` }}
                         ></div>
@@ -330,14 +332,14 @@ export default function Dashboard() {
                     {/* Action Button */}
                     {course.progressPercentage < 100 ? (
                       <button
-                        onClick={() => handleContinueLearning(course._id)}
+                        onClick={() => handleContinueLearning(course.id)}
                         className="w-full py-3 bg-gradient-to-r from-robitro-blue to-robitro-teal text-white font-bold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
                       >
                         ▶️ Continue Learning
                       </button>
                     ) : (
                       <button
-                        onClick={() => navigate(`/courses/${course._id}`)}
+                        onClick={() => setSelectedCertCourse(course)}
                         className="w-full py-3 bg-gradient-to-r from-green-400 to-green-500 text-white font-bold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
                       >
                         🏆 View Certificate
@@ -465,6 +467,13 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+      {selectedCertCourse && (
+        <CertificateModal
+          course={selectedCertCourse}
+          user={user}
+          onClose={() => setSelectedCertCourse(null)}
+        />
+      )}
     </Layout>
   );
 }

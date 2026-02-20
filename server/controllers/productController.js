@@ -10,7 +10,7 @@ export const getAllProducts = async (req, res) => {
     const cacheKey = `products:${JSON.stringify(req.query)}`;
 
     // Check cache first (skip cache for admin panel)
-    if (!req.path.includes('/admin/')) {
+    if (!req.originalUrl.includes('/admin/')) {
       const cached = cache.get(cacheKey);
       if (cached) {
         return res.status(200).json(cached);
@@ -23,7 +23,7 @@ export const getAllProducts = async (req, res) => {
     // Only filter active products if not from admin panel
     if (status) {
       where.status = status;
-    } else if (!req.path.includes('/admin/')) {
+    } else if (!req.originalUrl.includes('/admin/')) {
       where.status = 'active';
       where.stock = { gt: 0 };
     }
@@ -89,7 +89,7 @@ export const getAllProducts = async (req, res) => {
     };
 
     // Cache the response for 30 seconds (skip cache for admin panel)
-    if (!req.path.includes('/admin/')) {
+    if (!req.originalUrl.includes('/admin/')) {
       cache.set(cacheKey, response, 30);
     }
 
@@ -110,6 +110,9 @@ export const getProductById = async (req, res) => {
       include: {
         partner: {
           select: { name: true, partnerType: true, email: true, phone: true, website: true }
+        },
+        category: {
+          select: { id: true, name: true, slug: true }
         }
       },
     });
@@ -148,6 +151,9 @@ export const createProduct = async (req, res) => {
       specifications,
       warranty,
       status,
+      metadata,
+      rating,
+      reviewsCount,
     } = req.body;
 
     // Validation
@@ -182,6 +188,9 @@ export const createProduct = async (req, res) => {
         specifications: specifications || {},
         warranty: warranty || {},
         status: status || 'active',
+        metadata: metadata || {},
+        rating: rating !== undefined ? parseFloat(rating) : 0,
+        reviewsCount: reviewsCount !== undefined ? parseInt(reviewsCount) : 0,
         partnerId: req.user.role === 'partner' ? req.user.partnerId : null,
       },
       include: { category: true }
@@ -223,20 +232,23 @@ export const updateProduct = async (req, res) => {
     }
 
     // Update fields
-    const { name, description, price, stock, categoryId, categoryName, ageGroup, status, specifications, warranty, images } =
+    const { name, description, price, stock, categoryId, categoryName, ageGroup, status, specifications, warranty, images, metadata, rating, reviewsCount } =
       req.body;
 
     const updateData = {};
-    if (name) updateData.name = name;
-    if (description) updateData.description = description;
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = parseFloat(price);
     if (stock !== undefined) updateData.stock = parseInt(stock);
-    if (categoryId) updateData.categoryId = categoryId;
-    if (categoryName) updateData.categoryName = categoryName;
-    if (ageGroup) updateData.ageGroup = ageGroup;
-    if (status) updateData.status = status;
-    if (specifications) updateData.specifications = specifications;
-    if (warranty) updateData.warranty = warranty;
+    if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (categoryName !== undefined) updateData.categoryName = categoryName;
+    if (ageGroup !== undefined) updateData.ageGroup = ageGroup;
+    if (status !== undefined) updateData.status = status;
+    if (specifications !== undefined) updateData.specifications = specifications;
+    if (warranty !== undefined) updateData.warranty = warranty;
+    if (metadata !== undefined) updateData.metadata = metadata;
+    if (rating !== undefined) updateData.rating = parseFloat(rating);
+    if (reviewsCount !== undefined) updateData.reviewsCount = parseInt(reviewsCount);
 
     // Process images - handle comma-separated string from admin panel
     if (images) {

@@ -46,10 +46,10 @@ export default function CourseDetail() {
             sessions: rawCourse.metadata?.sessions || 16,
             students: rawCourse.enrollmentCount || 0,
             projects: rawCourse.metadata?.projects || 5,
-            level: rawCourse.level.charAt(0).toUpperCase() + rawCourse.level.slice(1),
+            level: (rawCourse.level || 'Beginner').charAt(0).toUpperCase() + (rawCourse.level || 'beginner').slice(1),
             features: rawCourse.metadata?.features || ['Live Classes', 'Certificate', 'Expert Mentors'],
             instructor: {
-              name: `${rawCourse.instructor?.firstName} ${rawCourse.instructor?.lastName}` || 'Expert Instructor',
+              name: rawCourse.instructor ? `${rawCourse.instructor.firstName} ${rawCourse.instructor.lastName}` : 'Expert Instructor',
               title: 'Senior Educator',
               avatar: rawCourse.instructor?.avatar || '👨‍🏫',
               bio: rawCourse.instructor?.bio || 'Experienced educator passionate about technology.',
@@ -57,13 +57,20 @@ export default function CourseDetail() {
               courses: 10,
               rating: 4.8
             },
-            // Map modules to curriculum
-            curriculum: rawCourse.modules?.map(mod => ({
-              week: mod.order,
-              title: mod.title,
-              duration: `${mod.lessons?.reduce((acc, l) => acc + (l.duration || 0), 0)} mins` || '2 hours',
-              topics: mod.lessons?.map(l => l.title) || []
-            })) || [],
+            // Map modules to curriculum, fallback into metadata curriculum
+            curriculum: (rawCourse.modules && rawCourse.modules.length > 0)
+              ? rawCourse.modules.map(mod => ({
+                week: mod.order,
+                title: mod.title,
+                duration: mod.lessons?.length > 0 ? `${mod.lessons.reduce((acc, l) => acc + (l.duration || 0), 0)} mins` : '',
+                topics: mod.lessons?.map(l => l.title) || []
+              }))
+              : (rawCourse.metadata?.curriculum?.map((mod, i) => ({
+                week: i + 1,
+                title: mod.title,
+                duration: mod.lessons?.length > 0 ? `${mod.lessons.length * 15} mins` : '',
+                topics: mod.lessons?.map(l => l.title) || []
+              })) || []),
             whatYouWillLearn: rawCourse.metadata?.whatYouWillLearn || [
               'Master core concepts and principles',
               'Build real-world hands-on projects',
@@ -75,7 +82,7 @@ export default function CourseDetail() {
               { name: 'Parent of Sam', rating: 5, date: '2 weeks ago', text: 'Highly recommended for young tech enthusiasts.' }
             ],
             reviews: 120, // Static for now
-            originalPrice: rawCourse.price + (rawCourse.metadata?.discountValue || 30)
+            originalPrice: Number((rawCourse.price + (rawCourse.metadata?.discountValue || 30)).toFixed(2))
           };
           setCourse(mappedCourse);
         }
@@ -560,9 +567,6 @@ export default function CourseDetail() {
             <button onClick={() => scrollToSection(curriculumRef)} className="py-4 px-2 font-semibold border-b-2 border-transparent hover:border-robitro-blue hover:text-robitro-blue text-gray-600 transition-all whitespace-nowrap">
               Curriculum
             </button>
-            <button onClick={() => scrollToSection(instructorRef)} className="py-4 px-2 font-semibold border-b-2 border-transparent hover:border-robitro-blue hover:text-robitro-blue text-gray-600 transition-all whitespace-nowrap">
-              Instructor
-            </button>
             <button onClick={() => scrollToSection(reviewsRef)} className="py-4 px-2 font-semibold border-b-2 border-transparent hover:border-robitro-blue hover:text-robitro-blue text-gray-600 transition-all whitespace-nowrap">
               Reviews
             </button>
@@ -613,8 +617,8 @@ export default function CourseDetail() {
                               {week.week}
                             </span>
                             <div>
-                              <h3 className="font-bold text-robitro-navy">{week.title}</h3>
-                              <p className="text-sm text-gray-500">{week.duration}</p>
+                              <h3 className="text-sm font-bold text-robitro-navy">{week.title}</h3>
+                              {week.duration && <p className="text-xs text-gray-500">{week.duration}</p>}
                             </div>
                           </div>
                         </div>
@@ -648,44 +652,7 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              {/* INSTRUCTOR SECTION */}
-              <div ref={instructorRef} className="bg-white rounded-2xl p-8 shadow-lg scroll-reveal scroll-mt-32">
-                <h2 className="text-2xl font-bold text-robitro-navy mb-6">Your Instructor</h2>
 
-                <div className="flex flex-col md:flex-row items-start gap-6">
-                  <div className="w-32 h-32 bg-gradient-to-br from-robitro-yellow to-orange-400 rounded-2xl flex items-center justify-center text-6xl flex-shrink-0">
-                    {course.instructor.avatar}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-robitro-navy">{course.instructor.name}</h3>
-                    <p className="text-robitro-blue font-semibold mb-4">{course.instructor.title}</p>
-                    <p className="text-gray-600 mb-6 leading-relaxed">{course.instructor.bio}</p>
-                    <div className="flex flex-wrap items-center gap-6 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">👥</span>
-                        <div>
-                          <div className="font-bold text-robitro-navy">{course.instructor.students.toLocaleString()}</div>
-                          <div className="text-gray-500">Students</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">📚</span>
-                        <div>
-                          <div className="font-bold text-robitro-navy">{course.instructor.courses}</div>
-                          <div className="text-gray-500">Courses</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">⭐</span>
-                        <div>
-                          <div className="font-bold text-robitro-navy">{course.instructor.rating}</div>
-                          <div className="text-gray-500">Rating</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* REVIEWS SECTION */}
               <div ref={reviewsRef} className="bg-white rounded-2xl p-8 shadow-lg scroll-reveal scroll-mt-32">

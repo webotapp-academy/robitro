@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import LocaleSelector from './LocaleSelector';
 
 export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
   const navigate = useNavigate();
@@ -79,6 +80,9 @@ export default function Navbar({ isAuthenticated, setIsAuthenticated, user }) {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
+
+            {/* Locale Selector */}
+            <LocaleSelector />
 
             {/* Search Button */}
             <button

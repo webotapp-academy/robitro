@@ -22,6 +22,7 @@ import LegalPage from './pages/LegalPage';
 
 // LMS Pages
 import Dashboard from './pages/Dashboard';
+import CoursePlayer from './pages/CoursePlayer';
 import MyCourses from './pages/MyCourses';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
@@ -30,10 +31,11 @@ import Profile from './pages/Profile';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProductForm from './pages/admin/AdminProductForm';
+import AdminCourseForm from './pages/admin/AdminCourseForm';
 import {
   AdminUsers, AdminPartners, AdminCourses, AdminProducts,
   AdminOrders, AdminCommunity, AdminEnrollments,
-  AdminLeads, AdminCallbacks, AdminProductCategories,
+  AdminLeads, AdminCallbacks, AdminProductCategories, AdminCourseCategories,
   CmsHero, CmsFeatures, CmsTestimonials, CmsFaqs,
   CmsBanners, CmsTechBites, CmsMakers, CmsProjects,
   CmsChallenges, CmsSocialLinks, CmsSettings,
@@ -98,6 +100,9 @@ export default function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="partners" element={<AdminPartners />} />
           <Route path="courses" element={<AdminCourses />} />
+          <Route path="courses/categories" element={<AdminCourseCategories />} />
+          <Route path="courses/add" element={<AdminCourseForm />} />
+          <Route path="courses/edit/:id" element={<AdminCourseForm />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="products/add" element={<AdminProductForm />} />
           <Route path="products/edit/:id" element={<AdminProductForm />} />
@@ -211,7 +216,7 @@ export default function App() {
                     path="/lms/course/:courseId/learn"
                     element={
                       <ProtectedRoute isAuthenticated={isAuthenticated}>
-                        <CourseDetail />
+                        <CoursePlayer />
                       </ProtectedRoute>
                     }
                   />

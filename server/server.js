@@ -11,6 +11,7 @@ import adminRoutes from './routes/admin.js';
 import orderRoutes from './routes/orders.js';
 import cmsRoutes from './routes/cms.js';
 import enquiryRoutes from './routes/enquiry.js';
+import uploadRoutes from './routes/upload.js';
 
 
 import path from 'path';
@@ -75,6 +76,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/cms', cmsRoutes);
 app.use('/api/enquiry', enquiryRoutes);
+app.use('/api/upload', uploadRoutes);
 
 
 // Health check

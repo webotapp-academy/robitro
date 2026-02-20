@@ -84,10 +84,13 @@ export default function Courses() {
           const mappedCourses = response.data.courses.map(course => ({
             ...course,
             ...course.metadata,
-            level: course.level.charAt(0).toUpperCase() + course.level.slice(1), // Capitalize level
-            students: course.enrollmentCount,
-            originalPrice: course.price + (course.metadata?.discountValue || 30), // Fallback if no specific discount logic
-            image: course.thumbnail
+            level: (course.level || 'Beginner').charAt(0).toUpperCase() + (course.level || 'beginner').slice(1),
+            students: course.enrollmentCount || 0,
+            originalPrice: Number((course.price + (course.metadata?.discountValue || 30)).toFixed(2)),
+            image: course.thumbnail || '/images/course-placeholder.jpg',
+            icon: course.metadata?.icon || '🎓',
+            color: course.metadata?.color || 'from-blue-500 to-indigo-600',
+            features: course.metadata?.features || ['Certification', 'Projects', 'Expert Support']
           }));
           setCourses(mappedCourses);
         }
